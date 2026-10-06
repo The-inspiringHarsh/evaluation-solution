@@ -17,7 +17,7 @@ SUPPORTED_PROVIDERS = ("anthropic", "gemini", "openai")
 
 DEFAULT_MODELS = {
     "anthropic": "claude-opus-5-5",
-    "gemini": "gemini-2.5-pro",
+    "gemini": "gemini-3.6-flash",
     "openai": "gpt-4.1",
 }
 
@@ -62,6 +62,10 @@ class Settings:
     exec_timeout_s: float = 10.0
     max_output_chars: int = 20_000
     pdf_dpi: int = 200
+    llm_fallback_models: tuple[str, ...] = ()
+    llm_max_rpm: float = 0.0
+    llm_max_retries: int = 5
+    crop_reads: str = "per_field"
     api_keys_present: dict[str, bool] = field(default_factory=dict)
 
     @property
@@ -96,6 +100,9 @@ def get_settings() -> Settings:
     threshold = _float_env("REVIEW_THRESHOLD", 0.85)
     if not 0.0 < threshold <= 1.0:
         raise ValueError("REVIEW_THRESHOLD must be in (0, 1].")
+    crop_reads = os.getenv("CROP_READS", "per_field").strip().lower() or "per_field"
+    if crop_reads not in ("per_field", "batched"):
+        raise ValueError(f"CROP_READS must be 'per_field' or 'batched', got {crop_reads!r}")
     keys = {name: bool(os.getenv(var, "").strip()) for name, var in _KEY_VARS.items()}
     keys["tavily"] = bool(os.getenv("TAVILY_API_KEY", "").strip())
     return Settings(
@@ -107,5 +114,9 @@ def get_settings() -> Settings:
         exec_timeout_s=_float_env("EXEC_TIMEOUT_SECONDS", 10.0),
         max_output_chars=int(_float_env("MAX_OUTPUT_CHARS", 20_000)),
         pdf_dpi=int(_float_env("PDF_DPI", 200)),
+        llm_fallback_models=tuple(m.strip() for m in os.getenv("LLM_FALLBACK_MODELS", "").split(",") if m.strip()),
+        llm_max_rpm=_float_env("LLM_MAX_RPM", 0.0),
+        llm_max_retries=int(_float_env("LLM_MAX_RETRIES", 5)),
+        crop_reads=crop_reads,
         api_keys_present=keys,
     )

@@ -135,8 +135,14 @@ def to_csv(rows: list[dict[str, Any]], columns: list[str]) -> str:
     return buf.getvalue()
 
 
-def batch_json(documents: list[DocumentResult], threshold: float, file_errors: dict[str, str] | None = None) -> dict[str, Any]:
-    return {
+def batch_json(
+    documents: list[DocumentResult],
+    threshold: float,
+    file_errors: dict[str, str] | None = None,
+    run_info: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    out: dict[str, Any] = {"run": run_info} if run_info else {}
+    return out | {
         "threshold": threshold,
         "threshold_rationale": (
             "0.85: identity and financial fields are high-risk; a false acceptance (wrong account number, IFSC or "
@@ -154,7 +160,11 @@ def flagging_json(flags: list[dict[str, Any]], threshold: float) -> dict[str, An
 
 
 def write_outputs(
-    documents: list[DocumentResult], out_dir: str | Path, threshold: float, file_errors: dict[str, str] | None = None
+    documents: list[DocumentResult],
+    out_dir: str | Path,
+    threshold: float,
+    file_errors: dict[str, str] | None = None,
+    run_info: dict[str, Any] | None = None,
 ) -> dict[str, Path]:
     """Write every required Question 3 artefact under ``out_dir``."""
     out = Path(out_dir)
@@ -168,7 +178,7 @@ def write_outputs(
     flags = flag_rows(documents)
     paths["all_results"] = out / "all_results.json"
     paths["all_results"].write_text(
-        json.dumps(batch_json(documents, threshold, file_errors), indent=2, ensure_ascii=False), encoding="utf-8"
+        json.dumps(batch_json(documents, threshold, file_errors, run_info), indent=2, ensure_ascii=False), encoding="utf-8"
     )
     paths["flagging_csv"] = out / "flagging_report.csv"
     paths["flagging_csv"].write_text(to_csv(flags, FLAG_COLUMNS), encoding="utf-8")

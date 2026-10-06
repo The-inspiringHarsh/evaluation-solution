@@ -114,8 +114,11 @@ def main() -> int:
             chart_path = out_dir / f"chart_q{i}.png"
             save_chart(turn.chart, chart_path)
             lines += [f"![chart]({chart_path.name})", ""]
+        if turn.search is not None:
+            lines += [f"*Search answered by:* `{turn.search.provider}` ({len(turn.search.sources)} sources)", ""]
         if turn.search_error:
             lines += [f"Search error: {turn.search_error}", ""]
+    lines += ["---", "", f"Live LLM calls by model in this session: `{getattr(llm, 'calls_by_model', {})}`.", ""]
     (out_dir / "demo_transcript.md").write_text("\n".join(lines), encoding="utf-8")
     print(f"wrote {out_dir / 'demo_transcript.md'}")
     return 0

@@ -5,7 +5,7 @@ Providers (``SEARCH_PROVIDER``):
 * ``tavily``    - Tavily REST API (needs ``TAVILY_API_KEY``)
 * ``llm``       - the LLM provider's own grounded search (Claude web search / Gemini Google Search)
 * ``duckduckgo``- key-free fallback via the ``ddgs`` package (snippets only)
-* ``auto``      - tavily if a key exists, else llm, else duckduckgo
+* ``auto``      - tavily if a key exists, else llm falling back to duckduckgo, else duckduckgo
 
 Every query is scrubbed of identity/financial numbers before leaving the process.
 """
@@ -98,6 +98,37 @@ class DuckDuckGoSearch:
         return SearchAnswer(query=query, answer="", sources=sources, provider="duckduckgo")
 
 
+class FallbackSearch:
+    """Try providers in order and return the first answer that has sources.
+
+    ``auto`` uses this so a provider-side failure (for example a Gemini key whose tier has no Google Search
+    grounding) still gets real, clickable results from the key-free provider. ``SearchAnswer.provider``
+    records which provider actually answered.
+    """
+
+    def __init__(self, providers: list[SearchProvider]) -> None:
+        self._providers = providers
+        self.name = ", then ".join(p.name for p in providers)
+
+    def search(self, query: str) -> SearchAnswer:
+        failures: list[str] = []
+        unsourced: SearchAnswer | None = None
+        for provider in self._providers:
+            try:
+                answer = provider.search(query)
+            except SearchError as exc:
+                logger.warning("search provider %s failed: %s", provider.name, exc)
+                failures.append(f"{provider.name}: {exc}")
+                continue
+            if answer.sources:
+                return answer
+            unsourced = unsourced or (answer if answer.answer else None)
+            failures.append(f"{provider.name}: no sources returned")
+        if unsourced is not None:
+            return unsourced
+        raise SearchError("All search providers failed (" + "; ".join(failures) + ")")
+
+
 def build_search_provider(mode: str, llm: LLMClient | None) -> SearchProvider:
     """Pick a provider according to ``SEARCH_PROVIDER`` and what is configured."""
     mode = (mode or "auto").lower()
@@ -112,7 +143,7 @@ def build_search_provider(mode: str, llm: LLMClient | None) -> SearchProvider:
     if os.environ.get("TAVILY_API_KEY"):
         return TavilySearch()
     if llm is not None and getattr(llm, "provider", "") in {"anthropic", "gemini"}:
-        return LLMNativeSearch(llm)
+        return FallbackSearch([LLMNativeSearch(llm), DuckDuckGoSearch()])
     return DuckDuckGoSearch()
 
 

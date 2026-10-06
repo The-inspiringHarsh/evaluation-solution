@@ -312,7 +312,7 @@ def document_page() -> None:
             for i, (name, data) in enumerate(files):
                 bar.progress(i / len(files), text=f"Processing {name} ({i + 1}/{len(files)})")
                 try:
-                    docs.extend(process_one(name, data, client, SETTINGS.review_threshold, SETTINGS.pdf_dpi))
+                    docs.extend(process_one(name, data, client, SETTINGS.review_threshold, SETTINGS.pdf_dpi, SETTINGS.crop_reads))
                     sources[name] = data
                 except IngestError as exc:
                     errors[name] = str(exc)

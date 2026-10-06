@@ -5,6 +5,7 @@ import pytest
 from src.common.llm import SearchAnswer, SearchSource
 from src.question2_inventory.search import (
     DuckDuckGoSearch,
+    FallbackSearch,
     LLMNativeSearch,
     SearchError,
     build_search_provider,
@@ -51,7 +52,32 @@ def test_provider_selection(monkeypatch, fake_llm_factory):
     monkeypatch.delenv("TAVILY_API_KEY", raising=False)
     llm = fake_llm_factory()
     llm.provider = "anthropic"
-    assert isinstance(build_search_provider("auto", llm), LLMNativeSearch)
+    auto = build_search_provider("auto", llm)
+    assert isinstance(auto, FallbackSearch) and auto.name == "llm, then duckduckgo"
+    assert isinstance(auto._providers[0], LLMNativeSearch) and isinstance(auto._providers[1], DuckDuckGoSearch)
     assert isinstance(build_search_provider("auto", None), DuckDuckGoSearch)
     with pytest.raises(SearchError):
         build_search_provider("tavily", None)
+
+
+class _Failing:
+    name = "broken"
+
+    def search(self, query):
+        raise SearchError("grounding not available on this tier")
+
+
+def test_fallback_search_uses_next_provider_and_reports_who_answered():
+    good = _Static(SearchAnswer("q", "", [SearchSource("Investopedia", "https://example.org/turnover")], provider="duckduckgo"))
+    ans = FallbackSearch([_Failing(), good]).search("inventory turnover")
+    assert ans.provider == "duckduckgo" and good.queries == ["inventory turnover"]
+
+
+def test_fallback_search_raises_when_every_provider_fails():
+    with pytest.raises(SearchError, match="broken: grounding not available"):
+        FallbackSearch([_Failing(), _Failing()]).search("q")
+
+
+def test_fallback_search_keeps_an_unsourced_answer_as_last_resort():
+    unsourced = _Static(SearchAnswer("q", "Turnover is COGS / average inventory.", []))
+    assert FallbackSearch([unsourced, _Failing()]).search("q").answer.startswith("Turnover")

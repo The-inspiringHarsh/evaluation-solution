@@ -165,20 +165,26 @@ On Windows the sandbox relies on the wall-clock timeout (POSIX CPU/memory limits
 | Variable | Default | Purpose |
 |---|---|---|
 | `LLM_PROVIDER` | `anthropic` | `anthropic`, `gemini` or `openai` |
-| `LLM_MODEL` | provider default | `claude-opus-5-5`, `gemini-2.5-pro`, `gpt-4.1` |
+| `LLM_MODEL` | provider default | `claude-opus-5-5`, `gemini-3.6-flash`, `gpt-4.1` (Gemini Pro models need a paid-tier key) |
 | `LLM_EFFORT` | `medium` | Claude effort level (`low`…`max`) |
 | `LLM_FALLBACKS` | `default` | Claude server-side refusal fallback; `off` to disable |
+| `LLM_FALLBACK_MODELS` | – | Gemini: comma-separated models tried when the main one is overloaded or out of daily quota |
+| `LLM_MAX_RPM` | `0` | Gemini: requests per minute per model (0 = unpaced; about 8 suits a free-tier key) |
+| `LLM_MAX_RETRIES` | `5` | Gemini: retries for HTTP 429/5xx/network errors, with backoff and the server's `retryDelay` |
 | `LLM_CACHE` | `on` | cache structured responses in `.cache/llm` (git-ignored) |
 | `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` / `OPENAI_API_KEY` | – | key for the chosen provider |
 | `SEARCH_PROVIDER` | `auto` | `auto`, `tavily`, `llm`, `duckduckgo` |
 | `TAVILY_API_KEY` | – | optional Tavily key |
 | `REVIEW_THRESHOLD` | `0.85` | field auto-accept threshold |
+| `CROP_READS` | `per_field` | Question 3: `per_field` (one request per crop) or `batched` (about 4 requests per document, for rate-limited keys) |
 | `EXEC_TIMEOUT_SECONDS` | `10` | sandbox wall-clock timeout |
 | `MAX_OUTPUT_CHARS` | `20000` | sandbox output cap |
 | `PDF_DPI` | `200` | PDF rasterisation resolution |
 
 `SEARCH_PROVIDER=auto` uses Tavily when a key is set, otherwise the LLM's own grounded search
-(Claude web search or Gemini Google Search), otherwise DuckDuckGo (key-free, via `ddgs`).
+(Claude web search or Gemini Google Search) and falls back to DuckDuckGo (key-free, via `ddgs`) when
+that fails, for example on a free-tier Gemini key, which does not include Google Search grounding.
+Each answer records which provider actually answered.
 
 The app starts without any key: the Inventory page then offers the sandbox playground and the
 Document page runs OCR-keyword classification only, marking every field as missing, with setup

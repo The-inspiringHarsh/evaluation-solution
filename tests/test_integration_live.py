@@ -38,7 +38,9 @@ def _require_supplied_documents() -> None:
 def test_live_pdf_is_unsupported():
     _require_supplied_documents()
     path = ROOT / "data/documents/Assignment Ashok.pdf"
-    batch = process_files([(path.name, path.read_bytes())], get_cached_llm_client(settings), settings.review_threshold)
+    batch = process_files(
+        [(path.name, path.read_bytes())], get_cached_llm_client(settings), settings.review_threshold, crop_reads=settings.crop_reads
+    )
     assert batch.documents
     assert all(d.classification.document_type == DocumentType.UNKNOWN for d in batch.documents)
     assert all(d.document_review_required for d in batch.documents)
@@ -61,7 +63,7 @@ def test_live_sample_images_cover_the_ten_types_with_scored_fields():
     """Coverage of the supplied set only (no per-file expectations), plus field-level invariants."""
     _require_supplied_documents()
     files = [(p.name, p.read_bytes()) for p in sorted((ROOT / "data/documents").iterdir()) if p.suffix.lower() in {".png", ".jpg", ".jpeg"}]
-    batch = process_files(files, get_cached_llm_client(settings), settings.review_threshold)
+    batch = process_files(files, get_cached_llm_client(settings), settings.review_threshold, crop_reads=settings.crop_reads)
     assert not batch.file_errors
     supported = set(DocumentType) - {DocumentType.UNKNOWN}
     assert supported <= {d.classification.document_type for d in batch.documents}

@@ -6,6 +6,7 @@ import json
 
 import pytest
 
+from src.common.llm import LLMError
 from src.question3_documents.extract import CLASSIFY_SCHEMA, _full_page_schema
 from src.question3_documents.pipeline import process_files
 from src.question3_documents.report import FLAG_COLUMNS, flag_rows, summary_rows, to_csv, write_outputs
@@ -61,15 +62,20 @@ class VisionScript:
                 ]
             }
         task = parts[-1].text
-        spec = next(f for f in DOC_SPECS[self.doc_type].fields if f"'{f.label}'" in task)
         table = self.binarized_values if "CHARACTER BY CHARACTER" in task else self.crop_values
-        value = table.get(spec.key, self.full_values.get(spec.key))
+        if all("value" in (v.get("properties") or {}) for v in props.values()):  # batched crop reads
+            return {key: self._crop_answer(key, table) for key in props}
+        spec = next(f for f in DOC_SPECS[self.doc_type].fields if f"'{f.label}'" in task)
+        return self._crop_answer(spec.key, table)
+
+    def _crop_answer(self, key, table):
+        value = table.get(key, self.full_values.get(key))
         return {
             "value": value,
             "legibility": "clear" if value else "absent",
             "label_visible": True,
             "ambiguous_characters": [],
-            "evidence": spec.label,
+            "evidence": key,
         }
 
 
@@ -146,6 +152,46 @@ def test_handwritten_disagreement_withholds_value(fake_llm_factory):
     ifsc = doc.fields["ifsc_code"]
     assert ifsc.normalized_value == "SBIN0227112" and "vision_crop_binarized" in ifsc.method
     assert any("matches amount in words" in w for w in doc.warnings)
+
+
+def test_batched_crop_reads_match_per_field_reads_with_fewer_requests(fake_llm_factory):
+    full = {
+        "bank_account_number": "31004258912",
+        "ifsc_code": "SBIN0227112",
+        "bank_name": "State Bank of India",
+        "amount_in_figures": "50,000",
+        "frequency": "As & when presented",
+        "amount_in_words": "Fifty thousand only",
+    }
+    img = png_bytes(make_text_image(["NACH MANDATE INSTRUCTION", "UMRN", "Bank a/c number", "IFSC  or MICR", "FREQUENCY"]))
+
+    def run(mode):
+        script = VisionScript(DocumentType.NACH_MANDATE, full, binarized_values={"bank_account_number": "31004258972"})
+        llm = fake_llm_factory(script)
+        return process_files([("m.png", img)], llm, crop_reads=mode).documents[0], len(llm.json_calls)
+
+    per_field, per_field_calls = run("per_field")
+    batched, batched_calls = run("batched")
+    assert batched_calls == 4  # classification, full page, colour crops, binarised crops
+    assert per_field_calls == 2 + 2 * len(full)
+    for key, f in per_field.fields.items():
+        b = batched.fields[key]
+        assert (b.raw_value, b.confidence, b.review_required, b.method) == (f.raw_value, f.confidence, f.review_required, f.method)
+    acct = batched.fields["bank_account_number"]
+    assert acct.raw_value == "31004258912" and acct.review_required  # 2 of 3 reads agree; the dissent still forces review
+
+
+def test_failed_crop_pass_is_reported_even_when_the_field_is_accepted(fake_llm_factory):
+    script = VisionScript(DocumentType.PAN_CARD, PAN_VALUES)
+
+    def flaky(system, parts, schema):
+        if "value" in schema["properties"]:
+            raise LLMError("Gemini API error (HTTP 429: quota exceeded)")
+        return script(system, parts, schema)
+
+    doc = process_files([_pan_file()], fake_llm_factory(flaky)).documents[0]
+    assert any(w.startswith("vision_crop pass failed for") and "HTTP 429" in w for w in doc.warnings)
+    assert all("vision_crop" not in f.method for f in doc.fields.values())
 
 
 def test_validation_failure_is_preserved_and_flagged(fake_llm_factory):

@@ -43,6 +43,7 @@ def process_files(
     pdf_dpi: int = 200,
     progress: ProgressFn = _noop,
     doc_workers: int = 3,
+    crop_reads: str = "per_field",
 ) -> BatchResult:
     """Process a batch of (filename, bytes). Never raises for per-file problems; they are reported."""
     batch = BatchResult(threshold=threshold, llm_used=llm is not None)
@@ -52,7 +53,7 @@ def process_files(
         index, (name, data) = index_and_file
         progress(f"Processing {name}", index / total)
         try:
-            return name, process_one(name, data, llm, threshold, pdf_dpi), None
+            return name, process_one(name, data, llm, threshold, pdf_dpi, crop_reads), None
         except IngestError as exc:
             return name, [], str(exc)
         except LLMError as exc:
@@ -68,7 +69,9 @@ def process_files(
     return batch
 
 
-def process_one(name: str, data: bytes, llm: Optional[LLMClient], threshold: float, pdf_dpi: int = 200) -> list[DocumentResult]:
+def process_one(
+    name: str, data: bytes, llm: Optional[LLMClient], threshold: float, pdf_dpi: int = 200, crop_reads: str = "per_field"
+) -> list[DocumentResult]:
     source = load_source(name, data, pdf_dpi=pdf_dpi)
     page_ocr: dict[int, PageOCR] = {p.page_number: ocr_page(p.processed) for p in source.pages}
     preprocessing = [
@@ -81,7 +84,7 @@ def process_one(name: str, data: bytes, llm: Optional[LLMClient], threshold: flo
     logical = classify_source(llm, source, page_ocr, threshold)
     results = []
     for doc in logical:
-        results.append(_build_result(llm, doc, page_ocr, threshold, preprocessing))
+        results.append(_build_result(llm, doc, page_ocr, threshold, preprocessing, crop_reads))
     return results
 
 
@@ -97,7 +100,12 @@ def _classification(doc: LogicalDocument) -> Classification:
 
 
 def _build_result(
-    llm: LLMClient, doc: LogicalDocument, page_ocr: dict[int, PageOCR], threshold: float, preprocessing: list[dict]
+    llm: LLMClient,
+    doc: LogicalDocument,
+    page_ocr: dict[int, PageOCR],
+    threshold: float,
+    preprocessing: list[dict],
+    crop_reads: str = "per_field",
 ) -> DocumentResult:
     warnings = list(doc.classification_notes)
     result = DocumentResult(
@@ -114,7 +122,7 @@ def _build_result(
         result.document_review_required = True
         return result
 
-    fields, extract_warnings = extract_document(llm, doc, page_ocr, threshold)
+    fields, extract_warnings = extract_document(llm, doc, page_ocr, threshold, crop_reads=crop_reads)
     warnings.extend(extract_warnings)
     spec = DOC_SPECS[doc.doc_type]
     result.fields = {f.key: fields[f.key] for f in spec.required_fields}

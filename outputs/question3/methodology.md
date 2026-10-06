@@ -61,6 +61,14 @@ confirms the label is visible); a label anchor alone scores 0.8.
 **Independence.** Crop passes never see what the full-page pass read, so agreement is genuine
 evidence rather than the model repeating itself.
 
+**Request budget (`CROP_READS`).** The default `per_field` mode sends one request per crop, about
+ten per handwritten form. `batched` sends all colour crops of a document in one request and all
+binarised crops in a second, each crop labelled with its field and read only for that field, so a
+document needs about four requests (classification, full page, two crop batches). The passes stay
+independent of each other; the trade-off is that one model call now sees several crops of the same
+form. The scoring, validation and review rules are identical in both modes, and `all_results.json`
+records the mode used under `run.crop_reads`.
+
 **No guessing.** Prompts require exact transcription, `null` for blank/illegible values, and a list
 of ambiguous characters. When reads disagree without a majority, the field's `raw_value` and
 `normalized_value` are set to `null`, every candidate is preserved in `candidates`, and the field is
@@ -136,7 +144,8 @@ flagged.
 
 * `json/<document-id>.json`: one file per logical document (`document-id` = first 10 hex chars of
   the file's SHA-1 + page list, so it is stable across runs).
-* `all_results.json`: every document plus the threshold and its rationale.
+* `all_results.json`: every document plus the threshold and its rationale, and a `run` block with
+  the provider, model, crop-read mode and the number of live calls each model answered.
 * `flagging_report.csv` / `.json`: one row per flagged field or document, with source file, page,
   predicted type, field, raw candidate, confidence, threshold, reason and a suggested reviewer action.
 * `extraction_summary.csv`: per-document counts of accepted, flagged and missing fields.

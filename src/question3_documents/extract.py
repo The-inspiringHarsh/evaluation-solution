@@ -6,6 +6,10 @@ Handwritten fields: vision full page + vision crop (colour, enhanced) + vision c
 Checkbox fields:    vision full page + two independent crop reads of the option group
 
 Crop reads never see what another pass returned, so their agreement is real evidence.
+
+``crop_reads="batched"`` sends all colour crops of a document in one request and all binarised crops in a
+second one (about four requests per document instead of one per crop) for rate-limited keys. Each crop is
+labelled with its field and read only for that field, so the passes stay independent of each other.
 """
 
 from __future__ import annotations
@@ -246,11 +250,15 @@ class Read:
 
 
 def _crop_prompt(spec: FieldSpec, doc_spec: DocSpec, variant: str) -> tuple[str, str]:
-    kind = "handwritten" if spec.kind != "printed" else "printed"
     system = (
         f"You read ONE field from a cropped region of a {doc_spec.display}. The crop was cut around the printed "
         f"label {spec.anchors[0]!r} (if visible) and may contain neighbouring fields - read only the requested one.\n" + _TRANSCRIBE_RULES
     )
+    return system, _crop_task(spec, variant)
+
+
+def _crop_task(spec: FieldSpec, variant: str) -> str:
+    kind = "handwritten" if spec.kind != "printed" else "printed"
     if spec.options:
         task = (
             f"Which option is ticked/marked for '{spec.label}'? Options: {', '.join(spec.options)}. "
@@ -264,7 +272,20 @@ def _crop_prompt(spec: FieldSpec, doc_spec: DocSpec, variant: str) -> tuple[str,
         )
     else:
         task = f"Read the {kind} value of '{spec.label}' ({spec.description})."
-    return system, task
+    return task
+
+
+def _read_from(method: str, data: dict[str, Any]) -> Read:
+    value = data.get("value")
+    value = value.strip() if isinstance(value, str) and value.strip() else None
+    return Read(
+        method,
+        value,
+        data.get("legibility", ""),
+        list(data.get("ambiguous_characters") or []),
+        data.get("label_visible"),
+        data.get("evidence", ""),
+    )
 
 
 def crop_read(llm: LLMClient, image: Image.Image, spec: FieldSpec, doc_spec: DocSpec, method: str, variant: str) -> Read:
@@ -278,16 +299,36 @@ def crop_read(llm: LLMClient, image: Image.Image, spec: FieldSpec, doc_spec: Doc
         )
     except LLMError as exc:
         return Read(method, None, error=str(exc))
-    value = data.get("value")
-    value = value.strip() if isinstance(value, str) and value.strip() else None
-    return Read(
-        method,
-        value,
-        data.get("legibility", ""),
-        list(data.get("ambiguous_characters") or []),
-        data.get("label_visible"),
-        data.get("evidence", ""),
+    return _read_from(method, data)
+
+
+def batch_crop_reads(
+    llm: LLMClient, items: list[tuple[FieldSpec, Image.Image]], doc_spec: DocSpec, method: str, variant: str
+) -> dict[str, Read]:
+    """Read several fields in one request, one labelled crop per field. Returns a Read per field key."""
+    if not items:
+        return {}
+    system = (
+        f"You read several fields from cropped regions of a {doc_spec.display}. Each crop is labelled with the one "
+        "field it was cut for and may contain neighbouring fields. Read each field ONLY from its own crop; never "
+        "use another crop to fill or correct a value.\n" + _TRANSCRIBE_RULES
     )
+    parts: list[Any] = []
+    tasks: list[str] = []
+    for spec, image in items:
+        parts.append(ImagePart(encode_png(image, max_side=VISION_MAX_SIDE), "image/png", f"Crop for field '{spec.key}':"))
+        tasks.append(f"- {spec.key} (crop cut around the printed label {spec.anchors[0]!r}): {_crop_task(spec, variant)}")
+    parts.append(TextPart("Return one result per field key, each read from that field's crop:\n" + "\n".join(tasks)))
+    keys = [spec.key for spec, _ in items]
+    schema = {"type": "object", "properties": {k: CROP_SCHEMA for k in keys}, "required": keys, "additionalProperties": False}
+    try:
+        data = llm.complete_json(system=system, parts=parts, schema=schema, max_tokens=1500 * len(items))
+    except LLMError as exc:
+        return {k: Read(method, None, error=str(exc)) for k in keys}
+    return {
+        k: _read_from(method, data[k]) if isinstance(data.get(k), dict) else Read(method, None, error="field missing from batched response")
+        for k in keys
+    }
 
 
 # --------------------------------------------------------------------------- regions
@@ -353,6 +394,43 @@ def choose_region(
 # --------------------------------------------------------------------------- per-field orchestration
 
 
+def _field_region(
+    doc: LogicalDocument, spec: FieldSpec, full_read: Optional[dict[str, Any]], page_ocr: dict[int, PageOCR]
+) -> tuple[PageImage, Optional[tuple[int, int, int, int]], float, str]:
+    """Page and crop region for one field (deterministic, so batched and per-field reads use the same crop)."""
+    page_no = (full_read or {}).get("page") or doc.pages[0]
+    if page_no not in doc.pages:
+        page_no = doc.pages[0]
+    page = doc.source.pages[page_no - 1]
+    region, proximity, region_desc = choose_region(page, spec, full_read, page_ocr.get(page_no))
+    return page, region, proximity, region_desc
+
+
+def _batched_crop_reads(
+    llm: LLMClient, doc: LogicalDocument, spec: DocSpec, full: dict[str, dict[str, Any]], page_ocr: dict[int, PageOCR]
+) -> dict[str, dict[str, Read]]:
+    """All colour crops in one request, all binarised crops (non-printed fields) in another."""
+    color: list[tuple[FieldSpec, Image.Image]] = []
+    binarized: list[tuple[FieldSpec, Image.Image]] = []
+    for f in spec.fields:
+        page, region, _, _ = _field_region(doc, f, full.get(f.key), page_ocr)
+        if region is None:
+            continue
+        color.append((f, crop_color(page, region)))
+        if f.kind != "printed":
+            binarized.append((f, crop_binarized(page, region)))
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        color_job = pool.submit(batch_crop_reads, llm, color, spec, "vision_crop", "color")
+        binarized_job = pool.submit(batch_crop_reads, llm, binarized, spec, "vision_crop_binarized", "binarized")
+        color_reads, binarized_reads = color_job.result(), binarized_job.result()
+    out: dict[str, dict[str, Read]] = {}
+    for key, read in color_reads.items():
+        out.setdefault(key, {})["color"] = read
+    for key, read in binarized_reads.items():
+        out.setdefault(key, {})["binarized"] = read
+    return out
+
+
 def _ocr_support(key: Optional[str], ocr_text: Optional[str]) -> Optional[float]:
     if not key or not ocr_text:
         return None
@@ -376,12 +454,12 @@ def resolve_field(
     full_read: Optional[dict[str, Any]],
     page_ocr: dict[int, PageOCR],
     threshold: float,
+    prefetched: Optional[dict[str, Read]] = None,
+    failed_passes: Optional[list[tuple[str, str, str]]] = None,
 ) -> FieldResult:
-    page_no = (full_read or {}).get("page") or doc.pages[0]
-    if page_no not in doc.pages:
-        page_no = doc.pages[0]
-    page = doc.source.pages[page_no - 1]
-    region, proximity, region_desc = choose_region(page, spec, full_read, page_ocr.get(page_no))
+    page, region, proximity, region_desc = _field_region(doc, spec, full_read, page_ocr)
+    page_no = page.page_number
+    prefetched = prefetched or {}
 
     reads: list[Read] = []
     if full_read is not None:
@@ -399,12 +477,17 @@ def resolve_field(
     ocr_text: Optional[str] = None
     if region is not None:
         color = crop_color(page, region)
-        reads.append(crop_read(llm, color, spec, doc_spec, "vision_crop", "color"))
+        reads.append(prefetched.get("color") or crop_read(llm, color, spec, doc_spec, "vision_crop", "color"))
         if spec.kind != "printed":
-            reads.append(crop_read(llm, crop_binarized(page, region), spec, doc_spec, "vision_crop_binarized", "binarized"))
+            reads.append(
+                prefetched.get("binarized")
+                or crop_read(llm, crop_binarized(page, region), spec, doc_spec, "vision_crop_binarized", "binarized")
+            )
         ocr_text = ocr_crop(color if spec.kind == "printed" else crop_binarized(page, region), spec)
 
     errors = [r.error for r in reads if r.error]
+    if failed_passes is not None:
+        failed_passes.extend((spec.key, r.method, r.error) for r in reads if r.error)
     vision = [r for r in reads if r.error is None]
     keys = {id(r): comparison_key(spec.validator, r.value, spec.options) for r in vision}
     nonnull = [r for r in vision if keys[id(r)]]
@@ -498,7 +581,12 @@ def _evidence_text(reads: list[Read], region_desc: str, page_no: int) -> str:
 
 
 def extract_document(
-    llm: LLMClient, doc: LogicalDocument, page_ocr: dict[int, PageOCR], threshold: float, workers: int = 4
+    llm: LLMClient,
+    doc: LogicalDocument,
+    page_ocr: dict[int, PageOCR],
+    threshold: float,
+    workers: int = 4,
+    crop_reads: str = "per_field",
 ) -> tuple[dict[str, FieldResult], list[str]]:
     """Run all passes for one logical document. Returns (fields, warnings)."""
     spec = DOC_SPECS[doc.doc_type]
@@ -508,15 +596,26 @@ def extract_document(
     except LLMError as exc:
         full = {}
         warnings.append(f"full-page extraction failed: {exc}")
+    prefetched = _batched_crop_reads(llm, doc, spec, full, page_ocr) if crop_reads == "batched" else {}
+    failed: list[tuple[str, str, str]] = []
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = {f.key: pool.submit(resolve_field, llm, doc, spec, f, full.get(f.key), page_ocr, threshold) for f in spec.fields}
+        futures = {
+            f.key: pool.submit(resolve_field, llm, doc, spec, f, full.get(f.key), page_ocr, threshold, prefetched.get(f.key), failed)
+            for f in spec.fields
+        }
         fields = {k: fut.result() for k, fut in futures.items()}
+    # A failed pass lowers the evidence for a field but is not by itself a review reason, so record it here
+    # where it is visible even when the remaining passes still agree.
+    for method, error in sorted({(m, e) for _, m, e in failed}):
+        keys = sorted(k for k, m, e in failed if (m, e) == (method, error))
+        warnings.append(f"{method} pass failed for {', '.join(keys)}: {error}")
     return fields, warnings
 
 
 __all__ = [
     "LogicalDocument",
     "SUPPORTED_TYPES",
+    "batch_crop_reads",
     "classify_source",
     "extract_document",
     "resolve_field",
