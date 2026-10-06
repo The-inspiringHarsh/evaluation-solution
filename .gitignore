@@ -1,0 +1,29 @@
+# secrets
+.env
+*.env
+!.env.example
+llm_key.env
+
+# caches and temporary artefacts (may contain extracted PII)
+.cache/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+.venv/
+venv/
+debug/
+crops/
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# supplied identity/insurance documents: kept out of Git history on purpose (see data/documents/README.md)
+data/documents/*
+!data/documents/README.md
