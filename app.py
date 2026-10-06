@@ -69,6 +69,8 @@ def sidebar() -> str:
     client, err = llm_client()
     st.sidebar.caption("Configuration")
     st.sidebar.write(f"**LLM provider:** {SETTINGS.llm_provider}  \n**Model:** `{SETTINGS.llm_model}`")
+    if SETTINGS.llm_provider == "gemini" and SETTINGS.llm_fallback_models:
+        st.sidebar.caption("Fallback models: " + ", ".join(f"`{m}`" for m in SETTINGS.llm_fallback_models))
     if client is None:
         st.sidebar.error("LLM key not configured")
     else:
@@ -262,9 +264,21 @@ def field_table(doc: DocumentResult, show_full: bool) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _load_saved() -> list[DocumentResult]:
+def _load_saved() -> tuple[list[DocumentResult], dict[str, str], dict | None]:
     data = json.loads(SAVED_RESULTS.read_text(encoding="utf-8"))
-    return [DocumentResult.model_validate(d) for d in data["documents"]]
+    return [DocumentResult.model_validate(d) for d in data["documents"]], data.get("file_errors") or {}, data.get("run")
+
+
+def _run_caption(run: dict | None) -> str:
+    """One line saying which provider/models produced the results on screen."""
+    if not run:
+        return ""
+    calls = run.get("live_calls_by_model") or {}
+    answered = ", ".join(f"{m} ×{n}" for m, n in calls.items()) or "none (all responses from the local cache)"
+    when = f"{run['generated_at_utc']} · " if run.get("generated_at_utc") else ""
+    return (
+        f"{when}provider `{run.get('provider')}` · crop reads `{run.get('crop_reads', 'per_field')}` · live calls answered by: {answered}"
+    )
 
 
 def document_page() -> None:
@@ -285,9 +299,8 @@ def document_page() -> None:
     use_samples = c2.checkbox("Use the supplied sample documents", value=not uploads)
     run = c2.button("Process batch", type="primary", width="stretch")
     if SAVED_RESULTS.exists() and c2.button("Load last saved batch results", width="stretch"):
-        st.session_state["q3_docs"] = _load_saved()
-        st.session_state["q3_sources"] = {}
-        st.session_state["q3_errors"] = {}
+        saved_docs, saved_errors, saved_run = _load_saved()
+        st.session_state.update(q3_docs=saved_docs, q3_sources={}, q3_errors=saved_errors, q3_run=saved_run)
 
     if run:
         files: list[tuple[str, bytes]] = [(u.name, u.getvalue()) for u in uploads or []]
@@ -309,6 +322,7 @@ def document_page() -> None:
             errors: dict[str, str] = {}
             sources: dict[str, bytes] = {}
             bar = st.progress(0.0, text="Starting…")
+            calls_before = dict(getattr(client, "calls_by_model", {}) or {})
             for i, (name, data) in enumerate(files):
                 bar.progress(i / len(files), text=f"Processing {name} ({i + 1}/{len(files)})")
                 try:
@@ -320,7 +334,14 @@ def document_page() -> None:
                     errors[name] = f"vision model error: {exc}"
             add_cross_document_hints(docs)
             bar.progress(1.0, text=f"Processed {len(files)} file(s) into {len(docs)} logical document(s)")
-            st.session_state.update(q3_docs=docs, q3_errors=errors, q3_sources=sources)
+            calls_after = dict(getattr(client, "calls_by_model", {}) or {})
+            run_info = {
+                "provider": SETTINGS.llm_provider,
+                "model": SETTINGS.llm_model,
+                "crop_reads": SETTINGS.crop_reads,
+                "live_calls_by_model": {m: n - calls_before.get(m, 0) for m, n in calls_after.items() if n > calls_before.get(m, 0)},
+            }
+            st.session_state.update(q3_docs=docs, q3_errors=errors, q3_sources=sources, q3_run=run_info if client else None)
 
     docs = st.session_state.get("q3_docs")
     if not docs:
@@ -340,6 +361,8 @@ def document_page() -> None:
         m[1].metric("Supported types found", int((summary["document_type"] != "unknown_or_other").sum()))
         m[2].metric("Documents needing review", int(summary["document_review_required"].sum()))
         m[3].metric("Fields auto-accepted", f"{int(summary['fields_auto_accepted'].sum())}/{int(summary['fields_total'].sum())}")
+        if caption := _run_caption(st.session_state.get("q3_run")):
+            st.caption(caption)
         view = summary[
             [
                 "source_file",
@@ -419,7 +442,11 @@ def document_page() -> None:
         )
     with tab_download:
         st.caption("Downloads contain unmasked values for local evaluation. Handle them as sensitive data.")
-        payload = json.dumps(batch_json(docs, SETTINGS.review_threshold, st.session_state.get("q3_errors")), indent=2, ensure_ascii=False)
+        payload = json.dumps(
+            batch_json(docs, SETTINGS.review_threshold, st.session_state.get("q3_errors"), st.session_state.get("q3_run")),
+            indent=2,
+            ensure_ascii=False,
+        )
         flags_all = flag_rows(docs)
         d = st.columns(5)
         d[0].download_button("all_results.json", payload, "all_results.json", "application/json", width="stretch")
@@ -447,6 +474,8 @@ def _masked_json(data: Any) -> Any:
     """Masked copy for on-screen preview: identifiers in values, candidates, evidence and reasons."""
     for doc in data.get("documents", []):
         doc["warnings"] = [mask_numbers_in_text(w) for w in doc.get("warnings", [])]
+        if isinstance(doc.get("classification"), dict):
+            doc["classification"]["evidence"] = mask_numbers_in_text(doc["classification"].get("evidence"))
         for group in ("fields", "auxiliary_fields"):
             for name, f in (doc.get(group) or {}).items():
                 mask = (lambda v, n=name: mask_field(n, v)) if name in SENSITIVE_FIELDS else mask_numbers_in_text
