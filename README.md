@@ -152,7 +152,7 @@ cp .env.example .env
 git clone <your-repo-url> evaluation-solution; cd evaluation-solution
 py -3.11 -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-# optional: install Tesseract from https://github.com/UB-Mannheim/tesseract/wiki and add it to PATH
+# optional: winget install --id UB-Mannheim.TesseractOCR   (found automatically in C:\Program Files\Tesseract-OCR)
 Copy-Item .env.example .env
 ```
 
@@ -165,12 +165,14 @@ On Windows the sandbox relies on the wall-clock timeout (POSIX CPU/memory limits
 | Variable | Default | Purpose |
 |---|---|---|
 | `LLM_PROVIDER` | `anthropic` | `anthropic`, `gemini` or `openai` |
+| `ANTHROPIC_MODEL` / `GEMINI_MODEL` / `OPENAI_MODEL` | – | model for that provider; wins over `LLM_MODEL`. The sidebar shows which variable chose the model |
 | `LLM_MODEL` | provider default | `claude-opus-5-5`, `gemini-3.6-flash`, `gpt-4.1` (Gemini Pro models need a paid-tier key) |
 | `LLM_EFFORT` | `medium` | Claude effort level (`low`…`max`) |
 | `LLM_FALLBACKS` | `default` | Claude server-side refusal fallback; `off` to disable |
 | `LLM_FALLBACK_MODELS` | – | Gemini: comma-separated models tried when the main one is overloaded or out of daily quota |
 | `LLM_MAX_RPM` | `0` | Gemini: requests per minute per model (0 = unpaced; use 4.5 on a free-tier key, which allows 5 per minute) |
 | `LLM_MAX_RETRIES` | `5` | Gemini: retries for HTTP 429/5xx/network errors, with backoff and the server's `retryDelay` |
+| `LLM_TIMEOUT_SECONDS` | `180` | per-request timeout for every provider; Anthropic and OpenAI-compatible calls retry 429/5xx/network errors up to 3 times |
 | `LLM_CACHE` | `on` | cache structured responses in `.cache/llm` (git-ignored) |
 | `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` / `OPENAI_API_KEY` | – | key for the chosen provider |
 | `OPENAI_BASE_URL` | `https://api.openai.com/v1` | OpenAI-compatible gateway for `LLM_PROVIDER=openai`, e.g. AI Pipe `https://aipipe.org/openai/v1` (use its token as `OPENAI_API_KEY`) |
@@ -181,11 +183,19 @@ On Windows the sandbox relies on the wall-clock timeout (POSIX CPU/memory limits
 | `EXEC_TIMEOUT_SECONDS` | `10` | sandbox wall-clock timeout |
 | `MAX_OUTPUT_CHARS` | `20000` | sandbox output cap |
 | `PDF_DPI` | `200` | PDF rasterisation resolution |
+| `TESSERACT_CMD` | – | full path to `tesseract.exe` if it is neither on PATH nor in `C:\Program Files\Tesseract-OCR` |
 
 `SEARCH_PROVIDER=auto` uses Tavily when a key is set, otherwise the LLM's own grounded search
 (Claude web search or Gemini Google Search) and falls back to DuckDuckGo (key-free, via `ddgs`) when
 that fails, for example on a free-tier Gemini key, which does not include Google Search grounding.
 Each answer records which provider actually answered.
+
+`.env` is always read from the project root (next to `app.py`), whatever folder the terminal is in.
+A non-empty variable in the shell wins over `.env`; an empty one (for example a leftover
+`$env:ANTHROPIC_API_KEY = ""`) does not hide the value in `.env`. The Anthropic key is read only from
+`ANTHROPIC_API_KEY`. The default model `claude-opus-5-5` is checked at startup against the model list of the
+installed `anthropic` SDK (1.11.0 here); an unknown ID shows a sidebar warning, and a model the API rejects
+gives an "HTTP 404 ... set ANTHROPIC_MODEL" message rather than a crash.
 
 The app starts without any key: the Inventory page then offers the sandbox playground and the
 Document page runs OCR-keyword classification only, marking every field as missing, with setup
@@ -319,8 +329,11 @@ screenshot index.
 
 | Symptom | Fix |
 |---|---|
-| "No API key found for LLM provider" | create `.env` from `.env.example`, set the key, restart Streamlit |
-| `TesseractNotFoundError` / OCR warnings | install Tesseract and make sure `tesseract` is on PATH |
+| "No API key found for LLM provider" | add `ANTHROPIC_API_KEY=<key>` (or the key for your `LLM_PROVIDER`) to the `.env` path the message names, then restart Streamlit. Run the app from this folder, not from a nested copy |
+| "Anthropic rejected the API key (HTTP 401)" | the key is wrong, revoked or has spaces/quotes around it; paste it again |
+| "...model ... was not found (HTTP 404)" | set `ANTHROPIC_MODEL` to a model your account can use, e.g. `claude-sonnet-5-5` |
+| "rate limit" / "overloaded" / "timeout" | the client already retried; wait a minute, or raise `LLM_TIMEOUT_SECONDS` |
+| Sidebar: "Tesseract OCR not found" | `winget install --id UB-Mannheim.TesseractOCR`, or set `TESSERACT_CMD` to the full path |
 | Web search unavailable | set `TAVILY_API_KEY`, or use Anthropic/Gemini (`SEARCH_PROVIDER=llm`), or `pip install ddgs` |
 | "Blocked by safety check" | the generated code used a forbidden construct; rephrase the question |
 | Sandbox "CPU-time or memory limit exceeded" | the query was too heavy; narrow it |

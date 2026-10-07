@@ -5,8 +5,10 @@ Run with:  streamlit run app.py
 
 from __future__ import annotations
 
+import hashlib
 import io
 import json
+import os
 import logging
 import zipfile
 from pathlib import Path
@@ -25,6 +27,7 @@ from src.question2_inventory.loader import WorkbookError, load_inventory, profil
 from src.question2_inventory.sandbox import run_code
 from src.question2_inventory.search import SearchError, build_search_provider
 from src.question3_documents.imaging import IngestError, load_source
+from src.question3_documents.ocr import find_tesseract, tesseract_version
 from src.question3_documents.pipeline import add_cross_document_hints, process_one
 from src.question3_documents.report import (
     FLAG_COLUMNS,
@@ -42,7 +45,12 @@ logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(mes
 
 st.set_page_config(page_title="InsightExtract AI", page_icon="🧾", layout="wide")
 
-SETTINGS = get_settings()
+try:
+    SETTINGS = get_settings()
+except ValueError as _config_error:
+    st.error(f"Configuration error in `.env` or the environment: {_config_error}")
+    st.info("Fix the value named above (see `.env.example` for the allowed options), then restart the app.")
+    st.stop()
 DEFAULT_WORKBOOK = DATA_DIR / "inventory" / "Inventory-Records-Sample-Data.xlsx"
 SAMPLE_DOC_DIR = DATA_DIR / "documents"
 SAVED_RESULTS = OUTPUT_DIR / "question3" / "all_results.json"
@@ -51,9 +59,21 @@ SAVED_RESULTS = OUTPUT_DIR / "question3" / "all_results.json"
 # --------------------------------------------------------------------------- shared helpers
 
 
-@st.cache_resource(show_spinner=False)
+def _client_signature() -> tuple[str, str, str]:
+    """Provider, model and a short one-way fingerprint of the key, so the cached client is rebuilt when any
+    of them changes (for example after the key is added to `.env`). The key itself is never stored or shown."""
+    key = os.getenv(SETTINGS.llm_key_var, "").strip()
+    fingerprint = hashlib.sha256(key.encode()).hexdigest()[:12] if key else ""
+    return SETTINGS.llm_provider, SETTINGS.llm_model, fingerprint
+
+
 def llm_client():
-    """Build the LLM client once per process; returns (client, error_message)."""
+    """The configured LLM client, cached per provider/model/key; returns (client, error_message)."""
+    return _build_llm_client(*_client_signature())
+
+
+@st.cache_resource(show_spinner=False)
+def _build_llm_client(provider: str, model: str, key_fingerprint: str):
     try:
         return get_cached_llm_client(SETTINGS), None
     except LLMNotConfigured as exc:
@@ -68,13 +88,22 @@ def sidebar() -> str:
     st.sidebar.divider()
     client, err = llm_client()
     st.sidebar.caption("Configuration")
-    st.sidebar.write(f"**LLM provider:** {SETTINGS.llm_provider}  \n**Model:** `{SETTINGS.llm_model}`")
+    model_note = "default" if SETTINGS.model_source == "default" else f"from `{SETTINGS.model_source}`"
+    st.sidebar.write(f"**LLM provider:** {SETTINGS.llm_provider}  \n**Model:** `{SETTINGS.llm_model}` ({model_note})")
     if SETTINGS.llm_provider == "gemini" and SETTINGS.llm_fallback_models:
         st.sidebar.caption("Fallback models: " + ", ".join(f"`{m}`" for m in SETTINGS.llm_fallback_models))
     if client is None:
-        st.sidebar.error("LLM key not configured")
+        st.sidebar.error("LLM key not configured" if not SETTINGS.llm_available else "LLM client could not start")
+        st.sidebar.caption(err or SETTINGS.setup_hint())
     else:
         st.sidebar.success("LLM key configured")
+    for warning in SETTINGS.config_warnings:
+        st.sidebar.warning(warning)
+    ocr_version = tesseract_version()
+    if ocr_version:
+        st.sidebar.write(f"**Tesseract OCR:** {ocr_version}")
+    else:
+        st.sidebar.caption("Tesseract OCR not found: OCR cross-checks are skipped (see README).")
     st.sidebar.write(f"**Review threshold:** {SETTINGS.review_threshold:.2f}")
     st.sidebar.caption("Keys are read from the environment / `.env` and are never displayed.")
     return page
@@ -548,7 +577,9 @@ def about_page() -> None:
 **Question 3 → document classification & field extraction**, as instructed (the Word file's numbering differs).
 
 **Configuration status**
-- LLM provider: `{SETTINGS.llm_provider}` · model `{SETTINGS.llm_model}` · key present: **{SETTINGS.llm_available}**
+- LLM provider: `{SETTINGS.llm_provider}` · model `{SETTINGS.llm_model}` (source: `{SETTINGS.model_source}`) · key present: **{SETTINGS.llm_available}**
+- `.env` found at the project root: **{SETTINGS.dotenv_found}** · LLM timeout {SETTINGS.llm_timeout_s:.0f}s
+- Tesseract OCR: **{tesseract_version() or "not found"}**{f" (`{find_tesseract()}`)" if find_tesseract() else ""}
 - Search provider setting: `{SETTINGS.search_provider}` (Tavily key present: **{SETTINGS.tavily_available}**)
 - Review threshold: **{SETTINGS.review_threshold}** (env `REVIEW_THRESHOLD`)
 

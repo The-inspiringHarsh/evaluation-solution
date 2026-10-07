@@ -83,6 +83,15 @@ def _b64(data: bytes) -> str:
     return base64.standard_b64encode(data).decode("ascii")
 
 
+_SECRETISH = re.compile(r"(sk-[A-Za-z0-9_\-]{8,}|AIza[0-9A-Za-z_\-]{20,}|tvly-[A-Za-z0-9_\-]{8,})")
+
+
+def _safe_detail(message: str, limit: int = 200) -> str:
+    """First line of a provider error message, truncated, with anything key-shaped removed."""
+    line = (str(message).strip().splitlines() or [""])[0]
+    return _SECRETISH.sub("<redacted>", line)[:limit]
+
+
 def _parse_json_text(text: str) -> dict[str, Any]:
     text = text.strip()
     if text.startswith("```"):
@@ -128,13 +137,18 @@ class AnthropicClient:
 
     provider = "anthropic"
 
-    def __init__(self, model: str, effort: str = "medium") -> None:
+    def __init__(self, model: str, effort: str = "medium", timeout_s: float = 180.0, max_retries: int = 3) -> None:
         try:
             import anthropic
         except ImportError as exc:
             raise LLMError("The 'anthropic' package is not installed. Run: pip install anthropic") from exc
+        key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+        if not key:
+            raise LLMNotConfigured("ANTHROPIC_API_KEY is not set.")
         self._anthropic = anthropic
-        self._client = anthropic.Anthropic(max_retries=3, timeout=300.0)
+        # The key is passed explicitly so only ANTHROPIC_API_KEY is ever used (never another auth variable).
+        # The SDK retries 408/409/429/5xx and connection errors with backoff, up to ``max_retries`` times.
+        self._client = anthropic.Anthropic(api_key=key, max_retries=max(0, min(max_retries, 5)), timeout=timeout_s)
         self.model = model
         self.effort = effort
         # Server-side refusal fallback (routes a declined request to a fallback model).
@@ -159,15 +173,29 @@ class AnthropicClient:
             else:
                 msg = self._client.messages.create(**kwargs)
         except anthropic.AuthenticationError as exc:
-            raise LLMError("Anthropic rejected the API key (authentication error).") from exc
+            raise LLMError(
+                "Anthropic rejected the API key (HTTP 401). Check ANTHROPIC_API_KEY in .env, then restart the app."
+            ) from exc
+        except anthropic.PermissionDeniedError as exc:
+            raise LLMError(f"This Anthropic key is not allowed to use model '{kwargs['model']}' (HTTP 403).") from exc
+        except anthropic.NotFoundError as exc:
+            raise LLMError(
+                f"Anthropic model '{kwargs['model']}' was not found for this key (HTTP 404). "
+                "Set ANTHROPIC_MODEL in .env to a model your account can use, then restart."
+            ) from exc
         except anthropic.RateLimitError as exc:
-            raise LLMError("Anthropic rate limit reached; retry shortly.") from exc
+            raise LLMError("Anthropic rate limit reached after retries; wait a minute and try again.") from exc
         except anthropic.BadRequestError as exc:
-            raise LLMError(f"Anthropic rejected the request: {getattr(exc, 'message', 'bad request')}") from exc
+            detail = _safe_detail(getattr(exc, "message", "") or "bad request")
+            raise LLMError(f"Anthropic rejected the request (HTTP 400): {detail}") from exc
         except anthropic.APIStatusError as exc:
+            if exc.status_code == 529:
+                raise LLMError("Anthropic is overloaded right now (HTTP 529); try again shortly.") from exc
             raise LLMError(f"Anthropic API error (HTTP {exc.status_code}).") from exc
+        except anthropic.APITimeoutError as exc:
+            raise LLMError("The Anthropic API did not answer in time (timeout); try again.") from exc
         except anthropic.APIConnectionError as exc:
-            raise LLMError("Could not reach the Anthropic API (network error).") from exc
+            raise LLMError("Could not reach the Anthropic API (network error). Check your internet connection.") from exc
         served_by = getattr(msg, "model", None)
         served_by = served_by if isinstance(served_by, str) and served_by else kwargs["model"]
         with self._stats_lock:
@@ -373,9 +401,12 @@ class GeminiClient:
     provider = "gemini"
     _BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
-    def __init__(self, model: str, fallback_models: Sequence[str] = (), max_rpm: float = 0.0, max_retries: int = 5) -> None:
+    def __init__(
+        self, model: str, fallback_models: Sequence[str] = (), max_rpm: float = 0.0, max_retries: int = 5, timeout_s: float = 180.0
+    ) -> None:
         import httpx
 
+        self._timeout = timeout_s
         self._httpx = httpx
         self.model = model
         self._models = [model, *[m for m in fallback_models if m and m != model]]
@@ -416,7 +447,7 @@ class GeminiClient:
             for attempt in range(max_retries + 1):
                 _pacer_for(model, self._rpm).wait(self._sleep)
                 try:
-                    resp = self._httpx.post(url, json=model_body, headers={"x-goog-api-key": self._key}, timeout=300.0)
+                    resp = self._httpx.post(url, json=model_body, headers={"x-goog-api-key": self._key}, timeout=self._timeout)
                 except self._httpx.HTTPError:
                     problem = "Could not reach the Gemini API (network error)."
                     delay = self._backoff(attempt)
@@ -523,10 +554,15 @@ class OpenAIClient:
     provider = "openai"
     _DEFAULT_BASE = "https://api.openai.com/v1"
 
-    def __init__(self, model: str) -> None:
+    _RETRY_STATUS = {408, 429, 500, 502, 503, 504}
+
+    def __init__(self, model: str, timeout_s: float = 180.0, max_retries: int = 2) -> None:
         import httpx
 
         self._httpx = httpx
+        self._timeout = timeout_s
+        self._max_retries = max(0, min(max_retries, 5))
+        self._sleep = time.sleep
         self.model = model
         base = os.environ.get("OPENAI_BASE_URL", "").strip() or self._DEFAULT_BASE
         self._URL = base.rstrip("/") + "/chat/completions"
@@ -539,15 +575,43 @@ class OpenAIClient:
     def last_call(self) -> tuple[str | None, bool]:
         return self._last.get()
 
+    @staticmethod
+    def _status_message(status: int, model: str) -> str:
+        if status == 401:
+            return "The OpenAI-compatible API rejected the key (HTTP 401). Check OPENAI_API_KEY in .env."
+        if status == 403:
+            return f"This key may not use model '{model}' (HTTP 403)."
+        if status == 404:
+            return f"Model '{model}' or the endpoint was not found (HTTP 404). Check OPENAI_MODEL and OPENAI_BASE_URL."
+        if status == 429:
+            return "OpenAI-compatible API rate limit or quota reached after retries (HTTP 429); try again later."
+        return f"OpenAI API error (HTTP {status})."
+
     def _post(self, body: dict[str, Any]) -> dict[str, Any]:
         self._last.set(None)
+        timeout_error = getattr(self._httpx, "TimeoutException", ())
+        for attempt in range(self._max_retries + 1):
+            last_attempt = attempt == self._max_retries
+            try:
+                resp = self._httpx.post(
+                    self._URL, json=body, headers={"Authorization": f"Bearer {self._key}"}, timeout=self._timeout
+                )
+            except timeout_error as exc:
+                if last_attempt:
+                    raise LLMError("The OpenAI-compatible API did not answer in time (timeout); try again.") from exc
+            except self._httpx.HTTPError as exc:
+                if last_attempt:
+                    raise LLMError("Could not reach the OpenAI-compatible API (network error).") from exc
+            else:
+                if resp.status_code == 200:
+                    break
+                if resp.status_code not in self._RETRY_STATUS or last_attempt:
+                    raise LLMError(self._status_message(resp.status_code, self.model))
+            self._sleep(min(30.0, 2.0 * 2**attempt))
         try:
-            resp = self._httpx.post(self._URL, json=body, headers={"Authorization": f"Bearer {self._key}"}, timeout=300.0)
-        except self._httpx.HTTPError as exc:
-            raise LLMError("Could not reach the OpenAI API (network error).") from exc
-        if resp.status_code != 200:
-            raise LLMError(f"OpenAI API error (HTTP {resp.status_code}).")
-        data = resp.json()
+            data = resp.json()
+        except ValueError as exc:
+            raise LLMError("The OpenAI-compatible API returned a response that is not JSON.") from exc
         served_by = data.get("model") if isinstance(data, dict) else None
         served_by = served_by if isinstance(served_by, str) and served_by else self.model
         with self._stats_lock:
@@ -593,15 +657,18 @@ def get_llm_client(settings: Settings) -> LLMClient:
     if not settings.llm_available:
         raise LLMNotConfigured(settings.setup_hint())
     if settings.llm_provider == "anthropic":
-        return AnthropicClient(settings.llm_model, settings.llm_effort)
+        return AnthropicClient(
+            settings.llm_model, settings.llm_effort, timeout_s=settings.llm_timeout_s, max_retries=min(settings.llm_max_retries, 3)
+        )
     if settings.llm_provider == "gemini":
         return GeminiClient(
             settings.llm_model,
             fallback_models=settings.llm_fallback_models,
             max_rpm=settings.llm_max_rpm,
             max_retries=settings.llm_max_retries,
+            timeout_s=settings.llm_timeout_s,
         )
-    return OpenAIClient(settings.llm_model)
+    return OpenAIClient(settings.llm_model, timeout_s=settings.llm_timeout_s, max_retries=min(settings.llm_max_retries, 3))
 
 
 # --------------------------------------------------------------------------- response cache

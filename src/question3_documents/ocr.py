@@ -25,15 +25,58 @@ os.environ.setdefault("OMP_THREAD_LIMIT", "1")
 OCR_TIMEOUT_S = 30
 
 
+_WINDOWS_TESSERACT_PATHS = (
+    r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+    r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+    os.path.expandvars(r"%LOCALAPPDATA%\Programs\Tesseract-OCR\tesseract.exe"),
+)
+
+
+def find_tesseract() -> Optional[str]:
+    """Path of the Tesseract binary: ``TESSERACT_CMD``, then ``PATH``, then the usual Windows install folders.
+
+    The Windows fallback matters because a terminal opened before Tesseract was installed does not see the
+    updated ``PATH``, so ``tesseract`` would look missing although it is installed.
+    """
+    configured = os.getenv("TESSERACT_CMD", "").strip().strip('"')
+    if configured:
+        return configured if os.path.isfile(configured) else None
+    on_path = shutil.which("tesseract")
+    if on_path:
+        return on_path
+    if os.name == "nt":
+        for candidate in _WINDOWS_TESSERACT_PATHS:
+            if os.path.isfile(candidate):
+                return candidate
+    return None
+
+
 @functools.lru_cache(maxsize=1)
 def tesseract_available() -> bool:
-    if shutil.which("tesseract") is None:
+    """True when Tesseract and pytesseract are usable; points pytesseract at the binary found."""
+    path = find_tesseract()
+    if path is None:
         return False
     try:
-        import pytesseract  # noqa: F401
+        import pytesseract
     except ImportError:
         return False
+    pytesseract.pytesseract.tesseract_cmd = path
     return True
+
+
+@functools.lru_cache(maxsize=1)
+def tesseract_version() -> Optional[str]:
+    """Version string of the configured Tesseract, or None when it is unavailable."""
+    if not tesseract_available():
+        return None
+    import pytesseract
+
+    try:
+        return str(pytesseract.get_tesseract_version())
+    except (pytesseract.TesseractNotFoundError, OSError) as exc:
+        logger.warning("tesseract version check failed: %s", type(exc).__name__)
+        return None
 
 
 @dataclass

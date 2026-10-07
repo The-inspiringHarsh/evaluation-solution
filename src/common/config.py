@@ -27,17 +27,56 @@ _KEY_VARS = {
     "openai": "OPENAI_API_KEY",
 }
 
+# Provider-specific model variables win over the generic LLM_MODEL.
+_MODEL_VARS = {
+    "anthropic": "ANTHROPIC_MODEL",
+    "gemini": "GEMINI_MODEL",
+    "openai": "OPENAI_MODEL",
+}
 
-def load_dotenv_if_present() -> None:
-    """Load `.env` from the project root without overriding real environment variables."""
-    env_path = PROJECT_ROOT / ".env"
-    if not env_path.exists():
-        return
+# Cheap shape checks that catch a key pasted into the wrong line; they never reveal the key itself.
+_KEY_PREFIXES = {"anthropic": "sk-ant-"}
+
+ENV_PATH = PROJECT_ROOT / ".env"
+
+
+def load_dotenv_if_present(env_path: Path | None = None) -> bool:
+    """Load `.env` from the project root (not the working directory); return whether it was found.
+
+    A variable already set to a non-empty value in the real environment wins. A variable that is set but
+    empty (for example ``$env:ANTHROPIC_API_KEY = ""`` left over in a shell) is filled from `.env`, because an
+    empty value would otherwise hide the key and the app would report it as missing.
+    """
+    env_path = env_path or ENV_PATH
+    if not env_path.is_file():
+        return False
     try:
-        from dotenv import load_dotenv
+        from dotenv import dotenv_values
     except ImportError:  # python-dotenv is optional
-        return
-    load_dotenv(env_path, override=False)
+        return False
+    for name, value in dotenv_values(env_path).items():
+        if value is not None and not os.environ.get(name, "").strip():
+            os.environ[name] = value.strip()
+    return True
+
+
+def _known_anthropic_models() -> frozenset[str]:
+    """Model IDs the installed ``anthropic`` SDK knows about (empty when the SDK is missing)."""
+    try:
+        from typing import get_args
+
+        from anthropic.types import Model
+    except ImportError:
+        return frozenset()
+    names: set[str] = set()
+    stack = list(get_args(Model))
+    while stack:
+        item = stack.pop()
+        if isinstance(item, str):
+            names.add(item)
+        else:
+            stack.extend(get_args(item))
+    return frozenset(names)
 
 
 def _float_env(name: str, default: float) -> float:
@@ -66,7 +105,11 @@ class Settings:
     llm_max_rpm: float = 0.0
     llm_max_retries: int = 5
     crop_reads: str = "per_field"
+    llm_timeout_s: float = 180.0
+    model_source: str = "default"
+    dotenv_found: bool = False
     api_keys_present: dict[str, bool] = field(default_factory=dict)
+    config_warnings: tuple[str, ...] = ()
 
     @property
     def llm_key_var(self) -> str:
@@ -80,11 +123,16 @@ class Settings:
     def tavily_available(self) -> bool:
         return self.api_keys_present.get("tavily", False)
 
+    @property
+    def llm_model_var(self) -> str:
+        return _MODEL_VARS[self.llm_provider]
+
     def setup_hint(self) -> str:
         """Human-readable guidance shown when the vision/LLM key is missing."""
+        where = f"`{ENV_PATH}`" if self.dotenv_found else f"a new `.env` at `{ENV_PATH}` (copy `.env.example`)"
         return (
             f"No API key found for LLM provider '{self.llm_provider}'. "
-            f"Copy `.env.example` to `.env` and set `{self.llm_key_var}=...` "
+            f"Add the line `{self.llm_key_var}=<your key>` to {where} "
             "(or export it in your shell), then restart the app. "
             "Set `LLM_PROVIDER` to one of: " + ", ".join(SUPPORTED_PROVIDERS) + "."
         )
@@ -92,11 +140,17 @@ class Settings:
 
 def get_settings() -> Settings:
     """Read settings from the environment (after loading `.env` if present)."""
-    load_dotenv_if_present()
+    dotenv_found = bool(load_dotenv_if_present())
     provider = os.getenv("LLM_PROVIDER", "anthropic").strip().lower() or "anthropic"
     if provider not in SUPPORTED_PROVIDERS:
         raise ValueError(f"LLM_PROVIDER must be one of {SUPPORTED_PROVIDERS}, got {provider!r}")
-    model = os.getenv("LLM_MODEL", "").strip() or DEFAULT_MODELS[provider]
+    model_var = _MODEL_VARS[provider]
+    if os.getenv(model_var, "").strip():
+        model, model_source = os.environ[model_var].strip(), model_var
+    elif os.getenv("LLM_MODEL", "").strip():
+        model, model_source = os.environ["LLM_MODEL"].strip(), "LLM_MODEL"
+    else:
+        model, model_source = DEFAULT_MODELS[provider], "default"
     threshold = _float_env("REVIEW_THRESHOLD", 0.85)
     if not 0.0 < threshold <= 1.0:
         raise ValueError("REVIEW_THRESHOLD must be in (0, 1].")
@@ -105,6 +159,21 @@ def get_settings() -> Settings:
         raise ValueError(f"CROP_READS must be 'per_field' or 'batched', got {crop_reads!r}")
     keys = {name: bool(os.getenv(var, "").strip()) for name, var in _KEY_VARS.items()}
     keys["tavily"] = bool(os.getenv("TAVILY_API_KEY", "").strip())
+    warnings: list[str] = []
+    key = os.getenv(_KEY_VARS[provider], "").strip()
+    prefix = _KEY_PREFIXES.get(provider)
+    if key and prefix and not key.startswith(prefix):
+        warnings.append(f"{_KEY_VARS[provider]} does not start with '{prefix}', so it may be a key for another provider.")
+    if provider == "anthropic":
+        known = _known_anthropic_models()
+        if known and model not in known:
+            warnings.append(
+                f"Model '{model}' is not in the installed anthropic SDK's model list; "
+                f"if requests fail with 'model not found', set {model_var} to a supported ID."
+            )
+    timeout = _float_env("LLM_TIMEOUT_SECONDS", 180.0)
+    if timeout <= 0:
+        raise ValueError("LLM_TIMEOUT_SECONDS must be positive.")
     return Settings(
         llm_provider=provider,
         llm_model=model,
@@ -118,5 +187,9 @@ def get_settings() -> Settings:
         llm_max_rpm=_float_env("LLM_MAX_RPM", 0.0),
         llm_max_retries=int(_float_env("LLM_MAX_RETRIES", 5)),
         crop_reads=crop_reads,
+        llm_timeout_s=timeout,
+        model_source=model_source,
+        dotenv_found=dotenv_found,
         api_keys_present=keys,
+        config_warnings=tuple(warnings),
     )
