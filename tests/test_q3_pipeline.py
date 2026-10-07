@@ -280,3 +280,24 @@ def test_every_supported_document_schema(doc_type):
     assert set(EXPECTED_FIELDS[doc_type]) <= set(enum)
     assert all(f.anchors for f in spec.fields)
     assert spec.keywords
+
+
+def test_model_box_order_is_disambiguated():
+    from src.question3_documents.extract import _model_box
+
+    size = (1000, 1000)
+    assert _model_box([100, 400, 600, 430], size, None) == ((100, 400, 600, 430), False)  # as requested
+    assert _model_box([400, 100, 430, 600], size, None) == ((100, 400, 600, 430), True)  # Gemini's [y0, x0, y1, x1]
+    assert _model_box([200, 200, 300, 300], size, None) == ((200, 200, 300, 300), False)  # square: keep as given
+    label_left_of_swapped = (20, 400, 90, 430)
+    assert _model_box([400, 100, 430, 600], size, label_left_of_swapped)[1] is True
+    label_next_to_requested = (300, 100, 390, 130)
+    assert _model_box([400, 100, 450, 140], size, label_next_to_requested) == ((400, 100, 450, 140), False)
+    assert _model_box(None, size, None) == (None, False) and _model_box([5, 5, 1, 1], size, None) == (None, False)
+
+
+def test_label_proximity_never_turns_a_wide_box_into_a_sliver():
+    from src.question3_documents.extract import _model_box
+
+    # requested order gives a wide date box; a stray label match next to the swapped reading must not win
+    assert _model_box([697, 220, 792, 248], (1000, 1000), (180, 700, 215, 790)) == ((697, 220, 792, 248), False)

@@ -251,7 +251,9 @@ Handwritten fields (all fields on the six insurance forms) are read differently 
    printed label (e.g. "IFSC", "Place of birth"), and the crop is built from both.
 3. Two **independent** crop reads run on differently preprocessed images: a colour, contrast-enhanced
    upscale, and a binarised, sharpened upscale with a character-by-character prompt. Neither sees
-   another pass's answer.
+   another pass's answer. With `CROP_READS=batched` (used for the committed outputs, because the
+   free-tier Gemini key allowed 20 requests per model per day) all colour crops of a form go in one
+   request and all binarised crops in another, each crop labelled with its field.
 4. Tesseract OCR of the crop is compared too, at half weight because it is weak on handwriting.
 5. Reads are compared with format-aware keys (IFSC/PAN/account/date rules), confusable characters
    (0/O, 1/I/L, 5/S, 8/B, 2/Z, 6/G) are normalised by position and flagged, and disagreement lowers
@@ -300,6 +302,13 @@ screenshot index.
 - The keyword classifier only knows English printed phrases.
 - The sandbox's CPU/memory limits are POSIX-only; on Windows only the timeout applies.
 - Web search needs network access to the chosen provider; DuckDuckGo results are snippets only.
+  Free-tier Gemini keys have no Google Search grounding, so with such a key search relies on the
+  DuckDuckGo fallback, which needs ordinary internet access.
+- The committed outputs were produced with a free-tier Gemini key: Flash models only, 20 requests per
+  model per day and 5 per minute (failed "high demand" requests count too). The run therefore used
+  batched crop reads and spread calls over several Flash models; `all_results.json` → `run` lists how
+  many calls each model answered. A paid key with `CROP_READS=per_field` and a Pro model gives more
+  independent reads per field.
 
 ## Troubleshooting
 
@@ -312,6 +321,8 @@ screenshot index.
 | Sandbox "CPU-time or memory limit exceeded" | the query was too heavy; narrow it |
 | PDF errors | the PDF is encrypted or corrupt; export it again or convert pages to PNG |
 | Stale results after changing prompts | set `LLM_CACHE=off` or delete `.cache/llm` |
+| Gemini `HTTP 429: quota exceeded: …PerDay…` | the free tier allows 20 requests per model per day: set `LLM_FALLBACK_MODELS`, `CROP_READS=batched` and `LLM_MAX_RPM=4.5`, wait for the daily reset, or enable billing; successful responses are cached, so a re-run only repeats the failed calls |
+| Gemini `HTTP 503` (high demand) | transient; the client retries with backoff and then tries the fallback models |
 
 ## Screenshots
 

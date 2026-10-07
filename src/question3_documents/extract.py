@@ -335,6 +335,7 @@ def batch_crop_reads(
 
 
 def _bbox_to_pixels(bbox: Any, size: tuple[int, int]) -> Optional[tuple[int, int, int, int]]:
+    """``[x0, y0, x1, y1]`` in 0-1000 normalised coordinates to pixels (None if malformed)."""
     if not isinstance(bbox, list) or len(bbox) != 4:
         return None
     try:
@@ -345,6 +346,38 @@ def _bbox_to_pixels(bbox: Any, size: tuple[int, int]) -> Optional[tuple[int, int
         return None
     w, h = size
     return int(x0 / 1000 * w), int(y0 / 1000 * h), int(x1 / 1000 * w), int(y1 / 1000 * h)
+
+
+def _model_box(
+    bbox: Any, size: tuple[int, int], label_box: Optional[tuple[int, int, int, int]]
+) -> tuple[Optional[tuple[int, int, int, int]], bool]:
+    """Pixel box for the model's bbox, and whether it had to be read as ``[y0, x0, y1, x1]``.
+
+    The prompt asks for ``[x0, y0, x1, y1]``, but Gemini models are trained on ``[ymin, xmin, ymax, xmax]``
+    and sometimes answer in that order. The swapped reading is used only when it is clearly better: it
+    sits next to the OCR-located label while the requested reading does not, or (with no label to check)
+    the requested reading is a tall sliver while the swapped one is a wide text line, which is the shape
+    of every field value here.
+    """
+    as_xy = _bbox_to_pixels(bbox, size)
+    if as_xy is None:
+        return None, False
+    as_yx = _bbox_to_pixels([bbox[1], bbox[0], bbox[3], bbox[2]], size)
+    if as_yx is None:
+        return as_xy, False
+
+    def ratio(b: tuple[int, int, int, int]) -> float:
+        return (b[2] - b[0]) / max(1, b[3] - b[1])
+
+    if label_box is not None:
+        near_xy, near_yx = _near(as_xy, label_box, size), _near(as_yx, label_box, size)
+        if near_xy and not near_yx:
+            return as_xy, False
+        if near_yx and not near_xy and ratio(as_yx) >= 1.0:
+            return as_yx, True
+    if ratio(as_xy) < 0.5 and ratio(as_yx) > 2.0:
+        return as_yx, True
+    return as_xy, False
 
 
 def _pad(box: tuple[int, int, int, int], size: tuple[int, int], spec: FieldSpec) -> tuple[int, int, int, int]:
@@ -374,8 +407,9 @@ def choose_region(
     label anchor is available, 0.5 when only the model box is available, 0.0 when no region exists.
     """
     size = page.size
-    model_box = _bbox_to_pixels(full_read.get("bbox"), size) if full_read else None
     anchor, label_box = anchor_region(ocr, spec, size) if ocr else (None, None)
+    model_box, swapped = _model_box(full_read.get("bbox"), size, label_box) if full_read else (None, False)
+    note = " (box given as [y0, x0, y1, x1])" if swapped else ""
     if model_box and label_box and _near(model_box, label_box, size):
         union = (
             min(model_box[0], label_box[0]),
@@ -383,9 +417,9 @@ def choose_region(
             max(model_box[2], label_box[2]),
             max(model_box[3], label_box[3]),
         )
-        return _pad(union, size, spec), 1.0, "model value box adjacent to OCR-located label"
+        return _pad(union, size, spec), 1.0, "model value box adjacent to OCR-located label" + note
     if model_box:
-        return _pad(model_box, size, spec), 0.5, "model value box (label not confirmed by OCR)"
+        return _pad(model_box, size, spec), 0.5, "model value box (label not confirmed by OCR)" + note
     if anchor:
         return clamp_box(anchor, size), 0.8, "region derived from OCR-located printed label"
     return None, 0.0, "no region located"
