@@ -352,3 +352,19 @@ screenshot index.
 | 4 | [Handwritten-field extraction with confidence scores](screenshots/04_handwritten_fields.png) |
 | 5 | [Human-review queue](screenshots/05_review_queue.png) |
 | 6 | [Downloads – JSON and reports](screenshots/06_downloads.png) |
+
+### Live run screenshots (Gemini, 7 Oct 2026)
+
+Captured from the running app with `LLM_PROVIDER=gemini` (`gemini-3.6-flash` with Flash fallbacks). The Question 3
+screens show the saved live batch with identifiers masked; names, dates and addresses are not masked by design.
+
+| # | Screenshot |
+|---|---|
+| Q2.1 | [Top five products by stock on hand](screenshots/live_gemini/q2_1_top_five_stock.png) |
+| Q2.2 | [Stock-calculation inconsistencies](screenshots/live_gemini/q2_2_stock_inconsistencies.png) |
+| Q2.3 | [Inconsistency detail table and data-quality caveat](screenshots/live_gemini/q2_3_inconsistency_table.png) |
+| Q2.4 | [Ten most valuable products](screenshots/live_gemini/q2_4_ten_most_valuable.png) |
+| Q2.5 | [Chart of the ten most valuable products](screenshots/live_gemini/q2_5_value_chart.png) |
+| Q3.1 | [Batch classification summary (12 files)](screenshots/live_gemini/q3_1_classification_summary.png) |
+| Q3.2 | [Field results with confidence and methods](screenshots/live_gemini/q3_2_field_results.png) |
+| Q3.3 | [Human-review queue (10 items below 0.85)](screenshots/live_gemini/q3_3_review_queue.png) |
