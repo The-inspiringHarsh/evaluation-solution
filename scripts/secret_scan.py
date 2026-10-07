@@ -19,6 +19,8 @@ SECRET_PATTERNS = {
     "Anthropic API key": re.compile(r"sk-ant-[A-Za-z0-9_\-]{20,}"),
     "OpenAI API key": re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9_\-]{32,}"),
     "Google API key": re.compile(r"AIza[0-9A-Za-z_\-]{35}"),
+    "Google auth token": re.compile(r"AQ\.[A-Za-z0-9_\-]{30,}"),
+    "filled-in key in .env.example": re.compile(r"(?m)^[A-Z_]*API_KEY=\S+"),
     "Tavily API key": re.compile(r"tvly-[A-Za-z0-9_\-]{20,}"),
     "GitHub token": re.compile(r"\bgh[pousr]_[A-Za-z0-9]{36,}"),
     "private key block": re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
