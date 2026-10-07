@@ -298,3 +298,18 @@ def test_pipeline_runs_without_tesseract(monkeypatch):
     monkeypatch.setattr(ocr, "tesseract_available", lambda: False)
     page = ocr.ocr_page(Image.new("RGB", (200, 100), "white"))
     assert page.words == [] and page.text == ""
+
+
+def test_gemini_blocked_key_gets_actionable_message():
+    from src.common.llm import _gemini_error
+
+    body = {
+        "error": {
+            "code": 403,
+            "message": "Requests to this API generativelanguage.googleapis.com method ... are blocked.",
+            "status": "PERMISSION_DENIED",
+            "details": [{"@type": "type.googleapis.com/google.rpc.ErrorInfo", "reason": "API_KEY_SERVICE_BLOCKED"}],
+        }
+    }
+    info = _gemini_error(NS(status_code=403, json=lambda: body))
+    assert "aistudio.google.com/apikey" in info.message and "GEMINI_API_KEY" in info.message

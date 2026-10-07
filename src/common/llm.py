@@ -319,6 +319,16 @@ class _GeminiError:
     daily_quota: bool = False
 
 
+_GEMINI_NEW_KEY = "create a Gemini key at https://aistudio.google.com/apikey and put it in GEMINI_API_KEY in .env"
+_GEMINI_KEY_REASONS = {
+    "API_KEY_SERVICE_BLOCKED": "this key is not allowed to call the Gemini API (its API restrictions block it); "
+    + _GEMINI_NEW_KEY
+    + ", or allow 'Generative Language API' for the key in Google Cloud Console",
+    "API_KEY_INVALID": "the key is not valid; " + _GEMINI_NEW_KEY,
+    "SERVICE_DISABLED": "the Generative Language API is disabled for this key's project; " + _GEMINI_NEW_KEY,
+}
+
+
 def _gemini_error(resp: Any, key: str = "") -> _GeminiError:
     """Pull the first line of the API message, ``RetryInfo.retryDelay`` and whether a per-day quota was hit.
 
@@ -344,7 +354,9 @@ def _gemini_error(resp: Any, key: str = "") -> _GeminiError:
         if not isinstance(detail, dict):
             continue
         kind = str(detail.get("@type", ""))
-        if kind.endswith("RetryInfo"):
+        if kind.endswith("ErrorInfo") and detail.get("reason") in _GEMINI_KEY_REASONS:
+            info.message = _GEMINI_KEY_REASONS[str(detail.get("reason"))]
+        elif kind.endswith("RetryInfo"):
             info.retry_after = _duration_seconds(str(detail.get("retryDelay", "")))
         elif kind.endswith("QuotaFailure"):
             raw = detail.get("violations")
