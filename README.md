@@ -129,7 +129,7 @@ the twelve supplied files (ten images and the two Ashok PDFs) into `data/documen
 ### Linux (Debian/Ubuntu)
 
 ```bash
-git clone <your-repo-url> evaluation-solution && cd evaluation-solution
+git clone https://github.com/The-inspiringHarsh/evaluation-solution.git evaluation-solution && cd evaluation-solution
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 sudo apt-get install -y tesseract-ocr          # optional, recommended
@@ -139,7 +139,7 @@ cp .env.example .env                           # then edit .env and set your key
 ### macOS
 
 ```bash
-git clone <your-repo-url> evaluation-solution && cd evaluation-solution
+git clone https://github.com/The-inspiringHarsh/evaluation-solution.git evaluation-solution && cd evaluation-solution
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 brew install tesseract                         # optional, recommended
@@ -149,7 +149,7 @@ cp .env.example .env
 ### Windows (PowerShell)
 
 ```powershell
-git clone <your-repo-url> evaluation-solution; cd evaluation-solution
+git clone https://github.com/The-inspiringHarsh/evaluation-solution.git evaluation-solution; cd evaluation-solution
 py -3.11 -m venv .venv; .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 # optional: winget install --id UB-Mannheim.TesseractOCR   (found automatically in C:\Program Files\Tesseract-OCR)

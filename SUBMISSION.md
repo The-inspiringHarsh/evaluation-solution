@@ -1,6 +1,6 @@
 # Submission: DesiCrew evaluation (Questions 2 and 3)
 
-**GitHub repository:** `https://github.com/<your-github-user>/evaluation-solution` (placeholder: replace after pushing; see [Publishing](#publishing))
+**GitHub repository:** https://github.com/The-inspiringHarsh/evaluation-solution (private; grant the evaluator access)
 
 **Numbering.** Question 2 = inventory Excel conversational agent. Question 3 = document classification and
 field-extraction pipeline. The Word file numbers the tasks differently; this mapping was specified for
@@ -207,7 +207,7 @@ Screenshots are taken with masking on (the default), so identity and financial n
 cd evaluation-solution
 gh repo create evaluation-solution --private --source . --remote origin --push
 # or, without the GitHub CLI: create an empty private repository on github.com, then
-git remote add origin https://github.com/<your-github-user>/evaluation-solution.git
+git remote add origin https://github.com/The-inspiringHarsh/evaluation-solution.git
 git push -u origin main
 ```
 
