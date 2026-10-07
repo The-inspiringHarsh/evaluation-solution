@@ -100,7 +100,14 @@ def _parse_json_text(text: str) -> dict[str, Any]:
     try:
         value = json.loads(text)
     except json.JSONDecodeError as exc:
-        raise LLMError("The model returned malformed JSON.") from exc
+        # Some OpenAI-compatible models wrap the object in prose; accept the first complete JSON object.
+        start = text.find("{")
+        try:
+            value, _ = json.JSONDecoder().raw_decode(text[start:]) if start >= 0 else (None, 0)
+        except json.JSONDecodeError:
+            value = None
+        if value is None:
+            raise LLMError("The model returned malformed JSON.") from exc
     if not isinstance(value, dict):
         raise LLMError("The model returned JSON that is not an object.")
     return value
@@ -649,7 +656,9 @@ class OpenAIClient:
             "response_format": {"type": "json_schema", "json_schema": {"name": "result", "schema": schema, "strict": True}},
         }
         data = self._post(body)
-        return _parse_json_text(data["choices"][0]["message"]["content"] or "")
+        message = data["choices"][0]["message"]
+        # Reasoning models on some gateways put the answer in reasoning_content and leave content empty.
+        return _parse_json_text(message.get("content") or message.get("reasoning_content") or "")
 
     def complete_text(self, *, system: str, messages: Sequence[dict[str, str]], max_tokens: int = 2000) -> str:
         body = {

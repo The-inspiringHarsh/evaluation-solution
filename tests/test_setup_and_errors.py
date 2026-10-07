@@ -313,3 +313,11 @@ def test_gemini_blocked_key_gets_actionable_message():
     }
     info = _gemini_error(NS(status_code=403, json=lambda: body))
     assert "aistudio.google.com/apikey" in info.message and "GEMINI_API_KEY" in info.message
+
+
+def test_json_wrapped_in_prose_is_accepted_but_prose_alone_is_not():
+    from src.common.llm import _parse_json_text
+
+    assert _parse_json_text('Here you go: {"a": 1} hope that helps') == {"a": 1}
+    with pytest.raises(LLMError, match="malformed"):
+        _parse_json_text("**Intent:** data\n```python\nresult = len(df)\n```")
