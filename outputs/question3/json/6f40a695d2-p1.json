@@ -1,0 +1,208 @@
+{
+  "document_id": "6f40a695d2-p1",
+  "source_file": "Moral.jpeg",
+  "pages": [
+    1
+  ],
+  "classification": {
+    "document_type": "moral_hazard_questionnaire",
+    "confidence": 1.0,
+    "review_required": false,
+    "evidence": "Moral Hazard Questionnaire",
+    "model_confidence": 1.0,
+    "keyword_vote": "moral_hazard_questionnaire"
+  },
+  "fields": {
+    "application_number": {
+      "raw_value": "1500137601025",
+      "normalized_value": "1500137601025",
+      "confidence": 0.893,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: label not visible [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "1500137601025"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.0,
+        "proximity": 0.5,
+        "image_quality": 0.988
+      },
+      "region": [
+        329,
+        195,
+        715,
+        296
+      ]
+    },
+    "name_of_life_assured": {
+      "raw_value": "Ashok",
+      "normalized_value": "Ashok",
+      "confidence": 0.915,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: label not visible [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "Ashok"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.4,
+        "proximity": 0.5,
+        "image_quality": 0.988
+      },
+      "region": [
+        414,
+        221,
+        625,
+        329
+      ]
+    },
+    "nominee_relationship": {
+      "raw_value": "Nephew",
+      "normalized_value": "Nephew",
+      "confidence": 0.976,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract"
+      ],
+      "evidence": "p1: Please confirm exact relationship** of nominee [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "Nephew"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": null,
+        "legibility": 1.0,
+        "ocr": 0.667,
+        "proximity": 1.0,
+        "image_quality": 0.988
+      },
+      "region": [
+        108,
+        669,
+        890,
+        781
+      ]
+    },
+    "date": {
+      "raw_value": null,
+      "normalized_value": null,
+      "confidence": 0.4,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Date: (page 1) [model value box (label not confirmed by OCR)]",
+      "review_required": true,
+      "review_reasons": [
+        "confidence 0.40 below threshold 0.85",
+        "independent reads disagree: vision_full_page='26/04/2026' | vision_crop='25/04/2026' | vision_crop_binarized='24/04/2024'",
+        "label proximity not fully confirmed (model value box (label not confirmed by OCR))",
+        "independent reads disagree (no majority) -> capped at 0.4"
+      ],
+      "handwritten": true,
+      "candidates": [
+        "26/04/2026",
+        "25/04/2026",
+        "24/04/2024"
+      ],
+      "confidence_components": {
+        "agreement": 0.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.0,
+        "proximity": 0.8,
+        "image_quality": 0.988
+      },
+      "region": [
+        90,
+        865,
+        360,
+        980
+      ]
+    },
+    "place": {
+      "raw_value": "West Bihar",
+      "normalized_value": "West Bihar",
+      "confidence": 0.948,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Place: [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "West Bihar"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.444,
+        "proximity": 0.8,
+        "image_quality": 0.988
+      },
+      "region": [
+        87,
+        899,
+        388,
+        1018
+      ]
+    }
+  },
+  "auxiliary_fields": {},
+  "document_review_required": true,
+  "warnings": [],
+  "preprocessing": [
+    {
+      "page": 1,
+      "rotation_applied": 0,
+      "skew_corrected_deg": -0.45,
+      "sharpness": 4329.1,
+      "contrast": 57.7,
+      "min_side_px": 1209.0,
+      "quality_score": 0.988
+    }
+  ],
+  "threshold": 0.85
+}

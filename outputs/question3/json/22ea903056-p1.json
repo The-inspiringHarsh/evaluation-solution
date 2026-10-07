@@ -1,0 +1,174 @@
+{
+  "document_id": "22ea903056-p1",
+  "source_file": "ChatGPT Image May 2, 2026, 03_52_54 PM.png",
+  "pages": [
+    1
+  ],
+  "classification": {
+    "document_type": "passport",
+    "confidence": 0.994,
+    "review_required": false,
+    "evidence": "REPUBLIC OF INDIA PASSPORT",
+    "model_confidence": 0.99,
+    "keyword_vote": "passport"
+  },
+  "fields": {
+    "passport_number": {
+      "raw_value": "X1234567",
+      "normalized_value": "X1234567",
+      "confidence": 0.982,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: पासपोर्ट संख्या / Passport No. [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": false,
+      "candidates": [
+        "X1234567"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.875,
+        "proximity": 1.0,
+        "image_quality": 0.94
+      },
+      "region": [
+        985,
+        79,
+        1374,
+        253
+      ]
+    },
+    "date_of_birth": {
+      "raw_value": "18/12/1979",
+      "normalized_value": "1979-12-18",
+      "confidence": 0.934,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: जन्म तिथि / Date of Birth [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": false,
+      "candidates": [
+        "18/12/1979"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.4,
+        "proximity": 1.0,
+        "image_quality": 0.94
+      },
+      "region": [
+        352,
+        411,
+        705,
+        560
+      ]
+    },
+    "date_of_expiry": {
+      "raw_value": "01/01/2030",
+      "normalized_value": "2030-01-01",
+      "confidence": 0.934,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: समाप्ति की तिथि / Date of Expiry [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": false,
+      "candidates": [
+        "01/01/2030"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.4,
+        "proximity": 1.0,
+        "image_quality": 0.94
+      },
+      "region": [
+        663,
+        709,
+        1078,
+        862
+      ]
+    },
+    "mrz_line_2": {
+      "raw_value": "X1234567<7IND7912185M3001010<<<<<<<<<<<<<<08",
+      "normalized_value": "X1234567<7IND7912185M3001010<<<<<<<<<<<<<<08",
+      "confidence": 0.7,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: X1234567<7IND7912185M3001010<<<<<<<<<<<<<<08 [model value box (label not confirmed by OCR)]",
+      "review_required": true,
+      "review_reasons": [
+        "confidence 0.70 below threshold 0.85",
+        "validation: MRZ birth date check digit mismatch (expected 2, found '5')",
+        "validation: MRZ expiry date check digit mismatch (expected 9, found '0')",
+        "label proximity not fully confirmed (model value box (label not confirmed by OCR))",
+        "format/checksum validation failed -> capped at 0.7"
+      ],
+      "handwritten": false,
+      "candidates": [
+        "X1234567<7IND7912185M3001010<<<<<<<<<<<<<<08"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 0.0,
+        "legibility": 1.0,
+        "ocr": 0.932,
+        "proximity": 0.5,
+        "image_quality": 0.94
+      },
+      "region": [
+        0,
+        900,
+        1536,
+        991
+      ]
+    }
+  },
+  "auxiliary_fields": {},
+  "document_review_required": true,
+  "warnings": [
+    "passport_number agrees with the MRZ",
+    "date_of_birth agrees with the MRZ",
+    "date_of_expiry agrees with the MRZ"
+  ],
+  "preprocessing": [
+    {
+      "page": 1,
+      "rotation_applied": 0,
+      "skew_corrected_deg": 0.0,
+      "sharpness": 2636.0,
+      "contrast": 48.1,
+      "min_side_px": 1024.0,
+      "quality_score": 0.94
+    }
+  ],
+  "threshold": 0.85
+}

@@ -1,0 +1,2010 @@
+{
+  "run": {
+    "generated_at_utc": "2026-10-07T07:12:51+00:00",
+    "provider": "gemini",
+    "model": "gemini-3.8-flash",
+    "fallback_models": [
+      "gemini-3.6-flash",
+      "gemini-3.7-flash",
+      "gemini-3.5-flash",
+      "gemini-3-flash-preview"
+    ],
+    "crop_reads": "batched",
+    "live_calls_by_model": {},
+    "cached_responses_by_model": {
+      "model not recorded": 32,
+      "gemini-3.7-flash": 1,
+      "gemini-3.6-flash": 2,
+      "gemini-3.8-flash": 2,
+      "gemini-3.5-flash": 1
+    },
+    "failed_calls": 0,
+    "files": 12,
+    "duration_seconds": 51
+  },
+  "threshold": 0.85,
+  "threshold_rationale": "0.85: identity and financial fields are high-risk; a false acceptance (wrong account number, IFSC or TIN) costs far more than a manual check, so anything without strong multi-pass agreement and a passing validator is sent to a human.",
+  "documents": [
+    {
+      "document_id": "97c45b128a-p1",
+      "source_file": "Aadhar.png",
+      "pages": [
+        1
+      ],
+      "classification": {
+        "document_type": "aadhaar_card",
+        "confidence": 0.994,
+        "review_required": false,
+        "evidence": "GOVERNMENT OF INDIA AADHAAR UNIQUE IDENTIFICATION AUTHORITY OF INDIA",
+        "model_confidence": 0.99,
+        "keyword_vote": "aadhaar_card"
+      },
+      "fields": {
+        "aadhaar_number": {
+          "raw_value": "1234 5678 9012",
+          "normalized_value": "1234 5678 9012",
+          "confidence": 0.7,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: आधार संख्या / Aadhaar Number [model value box adjacent to OCR-located label]",
+          "review_required": true,
+          "review_reasons": [
+            "confidence 0.70 below threshold 0.85",
+            "validation: Aadhaar numbers never start with 0 or 1",
+            "validation: Verhoeff checksum failed",
+            "format/checksum validation failed -> capped at 0.7"
+          ],
+          "handwritten": false,
+          "candidates": [
+            "1234 5678 9012"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 0.0,
+            "legibility": 1.0,
+            "ocr": 1.0,
+            "proximity": 1.0,
+            "image_quality": 0.897
+          },
+          "region": [
+            308,
+            387,
+            604,
+            471
+          ]
+        },
+        "full_name": {
+          "raw_value": "Mr. Ashok",
+          "normalized_value": "Mr. Ashok",
+          "confidence": 0.99,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Name / नाम [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": false,
+          "candidates": [
+            "Mr. Ashok"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 1.0,
+            "proximity": 1.0,
+            "image_quality": 0.897
+          },
+          "region": [
+            189,
+            62,
+            365,
+            160
+          ]
+        },
+        "date_of_birth": {
+          "raw_value": "18/12/1979",
+          "normalized_value": "1979-12-18",
+          "confidence": 0.93,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Date of Birth / जन्म तिथि [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": false,
+          "candidates": [
+            "18/12/1979"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.4,
+            "proximity": 1.0,
+            "image_quality": 0.897
+          },
+          "region": [
+            188,
+            115,
+            371,
+            217
+          ]
+        },
+        "address": {
+          "raw_value": "S/O Kumar, Kataia, West Bihar India - 841543",
+          "normalized_value": "S/O Kumar, Kataia, West Bihar India - 841543",
+          "confidence": 0.99,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: पता / Address [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": false,
+          "candidates": [
+            "S/O Kumar, Kataia, West Bihar India - 841543"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 1.0,
+            "proximity": 1.0,
+            "image_quality": 0.897
+          },
+          "region": [
+            0,
+            347,
+            207,
+            588
+          ]
+        }
+      },
+      "auxiliary_fields": {},
+      "document_review_required": true,
+      "warnings": [],
+      "preprocessing": [
+        {
+          "page": 1,
+          "rotation_applied": 0,
+          "skew_corrected_deg": 0.0,
+          "sharpness": 4332.1,
+          "contrast": 58.4,
+          "min_side_px": 619.0,
+          "quality_score": 0.897
+        }
+      ],
+      "threshold": 0.85
+    },
+    {
+      "document_id": "6f02efd0d1-p1-2",
+      "source_file": "Assignment Ashok.pdf",
+      "pages": [
+        1,
+        2
+      ],
+      "classification": {
+        "document_type": "unknown_or_other",
+        "confidence": 0.794,
+        "review_required": true,
+        "evidence": "ASSIGNMENT REQUEST FORM",
+        "model_confidence": 0.99,
+        "keyword_vote": null
+      },
+      "fields": {},
+      "auxiliary_fields": {},
+      "document_review_required": true,
+      "warnings": [
+        "OCR keyword classifier found no decisive printed keywords",
+        "document type is not one of the ten supported types",
+        "unsupported document: no fields extracted; routed to the human-review queue"
+      ],
+      "preprocessing": [
+        {
+          "page": 1,
+          "rotation_applied": 0,
+          "skew_corrected_deg": -1.19,
+          "sharpness": 653.8,
+          "contrast": 44.9,
+          "min_side_px": 1653.0,
+          "quality_score": 0.924
+        },
+        {
+          "page": 2,
+          "rotation_applied": 0,
+          "skew_corrected_deg": 0.0,
+          "sharpness": 865.6,
+          "contrast": 42.7,
+          "min_side_px": 1653.0,
+          "quality_score": 0.913
+        }
+      ],
+      "threshold": 0.85
+    },
+    {
+      "document_id": "59148fc4fc-p1",
+      "source_file": "ChatGPT Image May 2, 2026, 03_43_11 PM.png",
+      "pages": [
+        1
+      ],
+      "classification": {
+        "document_type": "driving_licence",
+        "confidence": 0.994,
+        "review_required": false,
+        "evidence": "INDIAN UNION DRIVING LICENCE MAHARASHTRA STATE",
+        "model_confidence": 0.99,
+        "keyword_vote": "driving_licence"
+      },
+      "fields": {
+        "dl_number": {
+          "raw_value": "MH12 2021 0001234",
+          "normalized_value": "MH12 2021 0001234",
+          "confidence": 1.0,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: DL No. [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": false,
+          "candidates": [
+            "MH12 2021 0001234"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 1.0,
+            "proximity": 1.0,
+            "image_quality": 0.999
+          },
+          "region": [
+            246,
+            180,
+            1068,
+            285
+          ]
+        },
+        "name": {
+          "raw_value": "MR. ASHOK",
+          "normalized_value": "MR. ASHOK",
+          "confidence": 1.0,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Name : [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": false,
+          "candidates": [
+            "MR. ASHOK"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 1.0,
+            "proximity": 1.0,
+            "image_quality": 0.999
+          },
+          "region": [
+            279,
+            257,
+            817,
+            344
+          ]
+        },
+        "date_of_issue": {
+          "raw_value": "15/06/2021",
+          "normalized_value": "2021-06-15",
+          "confidence": 0.92,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: DOI : [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": false,
+          "candidates": [
+            "15/06/2021"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.4,
+            "proximity": 0.8,
+            "image_quality": 0.999
+          },
+          "region": [
+            1030,
+            191,
+            1318,
+            275
+          ]
+        },
+        "valid_till": {
+          "raw_value": "14/06/2041",
+          "normalized_value": "2041-06-14",
+          "confidence": 0.94,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Valid Till : [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": false,
+          "candidates": [
+            "14/06/2041"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.4,
+            "proximity": 1.0,
+            "image_quality": 0.999
+          },
+          "region": [
+            916,
+            242,
+            1373,
+            319
+          ]
+        }
+      },
+      "auxiliary_fields": {},
+      "document_review_required": false,
+      "warnings": [
+        "issue date precedes validity date"
+      ],
+      "preprocessing": [
+        {
+          "page": 1,
+          "rotation_applied": 0,
+          "skew_corrected_deg": 0.0,
+          "sharpness": 2569.5,
+          "contrast": 67.8,
+          "min_side_px": 997.0,
+          "quality_score": 0.999
+        }
+      ],
+      "threshold": 0.85
+    },
+    {
+      "document_id": "22ea903056-p1",
+      "source_file": "ChatGPT Image May 2, 2026, 03_52_54 PM.png",
+      "pages": [
+        1
+      ],
+      "classification": {
+        "document_type": "passport",
+        "confidence": 0.994,
+        "review_required": false,
+        "evidence": "REPUBLIC OF INDIA PASSPORT",
+        "model_confidence": 0.99,
+        "keyword_vote": "passport"
+      },
+      "fields": {
+        "passport_number": {
+          "raw_value": "X1234567",
+          "normalized_value": "X1234567",
+          "confidence": 0.982,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: पासपोर्ट संख्या / Passport No. [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": false,
+          "candidates": [
+            "X1234567"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.875,
+            "proximity": 1.0,
+            "image_quality": 0.94
+          },
+          "region": [
+            985,
+            79,
+            1374,
+            253
+          ]
+        },
+        "date_of_birth": {
+          "raw_value": "18/12/1979",
+          "normalized_value": "1979-12-18",
+          "confidence": 0.934,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: जन्म तिथि / Date of Birth [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": false,
+          "candidates": [
+            "18/12/1979"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.4,
+            "proximity": 1.0,
+            "image_quality": 0.94
+          },
+          "region": [
+            352,
+            411,
+            705,
+            560
+          ]
+        },
+        "date_of_expiry": {
+          "raw_value": "01/01/2030",
+          "normalized_value": "2030-01-01",
+          "confidence": 0.934,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: समाप्ति की तिथि / Date of Expiry [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": false,
+          "candidates": [
+            "01/01/2030"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.4,
+            "proximity": 1.0,
+            "image_quality": 0.94
+          },
+          "region": [
+            663,
+            709,
+            1078,
+            862
+          ]
+        },
+        "mrz_line_2": {
+          "raw_value": "X1234567<7IND7912185M3001010<<<<<<<<<<<<<<08",
+          "normalized_value": "X1234567<7IND7912185M3001010<<<<<<<<<<<<<<08",
+          "confidence": 0.7,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: X1234567<7IND7912185M3001010<<<<<<<<<<<<<<08 [model value box (label not confirmed by OCR)]",
+          "review_required": true,
+          "review_reasons": [
+            "confidence 0.70 below threshold 0.85",
+            "validation: MRZ birth date check digit mismatch (expected 2, found '5')",
+            "validation: MRZ expiry date check digit mismatch (expected 9, found '0')",
+            "label proximity not fully confirmed (model value box (label not confirmed by OCR))",
+            "format/checksum validation failed -> capped at 0.7"
+          ],
+          "handwritten": false,
+          "candidates": [
+            "X1234567<7IND7912185M3001010<<<<<<<<<<<<<<08"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 0.0,
+            "legibility": 1.0,
+            "ocr": 0.932,
+            "proximity": 0.5,
+            "image_quality": 0.94
+          },
+          "region": [
+            0,
+            900,
+            1536,
+            991
+          ]
+        }
+      },
+      "auxiliary_fields": {},
+      "document_review_required": true,
+      "warnings": [
+        "passport_number agrees with the MRZ",
+        "date_of_birth agrees with the MRZ",
+        "date_of_expiry agrees with the MRZ"
+      ],
+      "preprocessing": [
+        {
+          "page": 1,
+          "rotation_applied": 0,
+          "skew_corrected_deg": 0.0,
+          "sharpness": 2636.0,
+          "contrast": 48.1,
+          "min_side_px": 1024.0,
+          "quality_score": 0.94
+        }
+      ],
+      "threshold": 0.85
+    },
+    {
+      "document_id": "18900c6e91-p1",
+      "source_file": "ECS.jpeg",
+      "pages": [
+        1
+      ],
+      "classification": {
+        "document_type": "nach_ecs_mandate",
+        "confidence": 0.994,
+        "review_required": false,
+        "evidence": "NACH MANDATE INSTRUCTION",
+        "model_confidence": 0.99,
+        "keyword_vote": "nach_ecs_mandate"
+      },
+      "fields": {
+        "bank_account_number": {
+          "raw_value": "31004258912",
+          "normalized_value": "31004258912",
+          "confidence": 0.926,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Bank a/c number 31004258912 [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "31004258912"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.0,
+            "proximity": 0.8,
+            "image_quality": 1.0
+          },
+          "region": [
+            46,
+            155,
+            557,
+            271
+          ]
+        },
+        "ifsc_code": {
+          "raw_value": "SBIN0227112",
+          "normalized_value": "SBIN0227112",
+          "confidence": 0.747,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: IFSC SB1N0227112 [model value box (label not confirmed by OCR)]",
+          "review_required": true,
+          "review_reasons": [
+            "confidence 0.75 below threshold 0.85",
+            "ambiguous characters reported: I or 1 at position 3; 1 or I at position 9; 1 or I at position 10",
+            "label proximity not fully confirmed (model value box (label not confirmed by OCR))"
+          ],
+          "handwritten": true,
+          "candidates": [
+            "SBIN0022712",
+            "SBIN0227112"
+          ],
+          "confidence_components": {
+            "agreement": 0.667,
+            "validation": 1.0,
+            "legibility": 0.55,
+            "ocr": 0.273,
+            "proximity": 0.8,
+            "image_quality": 1.0
+          },
+          "region": [
+            452,
+            190,
+            875,
+            294
+          ]
+        },
+        "bank_name": {
+          "raw_value": "State Bank of India",
+          "normalized_value": "State Bank of India",
+          "confidence": 0.967,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract"
+          ],
+          "evidence": "p1: with bank State Bank of India [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "State Bank of India"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": null,
+            "legibility": 1.0,
+            "ocr": 0.5,
+            "proximity": 1.0,
+            "image_quality": 1.0
+          },
+          "region": [
+            0,
+            195,
+            555,
+            303
+          ]
+        },
+        "amount_in_figures": {
+          "raw_value": "50,000",
+          "normalized_value": "50000",
+          "confidence": 0.945,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: ₹ 50,000 [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "50,000"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 0.85,
+            "ocr": 0.8,
+            "proximity": 0.8,
+            "image_quality": 1.0
+          },
+          "region": [
+            805,
+            211,
+            1147,
+            337
+          ]
+        },
+        "frequency": {
+          "raw_value": "As & when presented",
+          "normalized_value": "As & when presented",
+          "confidence": 0.966,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: As & when presented [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "As & when presented"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.75,
+            "proximity": 0.8,
+            "image_quality": 1.0
+          },
+          "region": [
+            417,
+            254,
+            665,
+            362
+          ]
+        }
+      },
+      "auxiliary_fields": {
+        "amount_in_words": {
+          "raw_value": "Fifty thousand only.",
+          "normalized_value": "Fifty thousand only",
+          "confidence": 0.954,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract"
+          ],
+          "evidence": "p1: ees Fifty thousand only. [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "Fifty thousand only",
+            "Fifty thousand only."
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": null,
+            "legibility": 1.0,
+            "ocr": 0.706,
+            "proximity": 0.8,
+            "image_quality": 1.0
+          },
+          "region": [
+            126,
+            212,
+            657,
+            356
+          ]
+        }
+      },
+      "document_review_required": true,
+      "warnings": [
+        "amount in figures matches amount in words"
+      ],
+      "preprocessing": [
+        {
+          "page": 1,
+          "rotation_applied": 0,
+          "skew_corrected_deg": 0.0,
+          "sharpness": 10203.2,
+          "contrast": 62.6,
+          "min_side_px": 1147.0,
+          "quality_score": 1.0
+        }
+      ],
+      "threshold": 0.85
+    },
+    {
+      "document_id": "fc98ff2ebe-p1",
+      "source_file": "Fatca.jpeg",
+      "pages": [
+        1
+      ],
+      "classification": {
+        "document_type": "fatca_annexure",
+        "confidence": 1.0,
+        "review_required": false,
+        "evidence": "ANNEXURE FORM (Information required for reporting under Section 285BA of the Income Tax Act, 1961)",
+        "model_confidence": 1.0,
+        "keyword_vote": "fatca_annexure"
+      },
+      "fields": {
+        "policy_number": {
+          "raw_value": "1500137601025",
+          "normalized_value": "1500137601025",
+          "confidence": 0.804,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Policy No: 1500137601025 [model value box (label not confirmed by OCR)]",
+          "review_required": true,
+          "review_reasons": [
+            "confidence 0.80 below threshold 0.85",
+            "label proximity not fully confirmed (model value box (label not confirmed by OCR))",
+            "review hint only (not used to fill): application/policy number read confidently elsewhere in this batch as 1500137601025"
+          ],
+          "handwritten": true,
+          "candidates": [
+            "1500137601025",
+            "1500157601025"
+          ],
+          "confidence_components": {
+            "agreement": 0.667,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.0,
+            "proximity": 0.8,
+            "image_quality": 1.0
+          },
+          "region": [
+            55,
+            262,
+            364,
+            359
+          ]
+        },
+        "tin_pan": {
+          "raw_value": "BPQPD 3051R,",
+          "normalized_value": "BPQPD3051R",
+          "confidence": 0.921,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: BPQPD 3051R, [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "BPQPD 3051R",
+            "BPQPD 3051R,",
+            "BPQPD3051R"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.5,
+            "proximity": 0.5,
+            "image_quality": 1.0
+          },
+          "region": [
+            174,
+            563,
+            493,
+            671
+          ]
+        },
+        "fathers_name": {
+          "raw_value": "Arjun Das Kumar",
+          "normalized_value": "Arjun Das Kumar",
+          "confidence": 0.971,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: me: Arjun Das Kumar [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "Arjun Das Kumar"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.846,
+            "proximity": 0.8,
+            "image_quality": 1.0
+          },
+          "region": [
+            116,
+            697,
+            476,
+            801
+          ]
+        },
+        "place_of_birth": {
+          "raw_value": "West Bihar.",
+          "normalized_value": "West Bihar",
+          "confidence": 0.977,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: c) Place of birth: West Bihar. [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "West Bihar",
+            "West Bihar."
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.556,
+            "proximity": 1.0,
+            "image_quality": 1.0
+          },
+          "region": [
+            740,
+            690,
+            1072,
+            798
+          ]
+        },
+        "nationality": {
+          "raw_value": "Indian",
+          "normalized_value": "Indian",
+          "confidence": 0.978,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract"
+          ],
+          "evidence": "p1: e) Nationality: Indian [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "Indian"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": null,
+            "legibility": 1.0,
+            "ocr": 0.667,
+            "proximity": 1.0,
+            "image_quality": 1.0
+          },
+          "region": [
+            351,
+            720,
+            721,
+            831
+          ]
+        }
+      },
+      "auxiliary_fields": {},
+      "document_review_required": true,
+      "warnings": [],
+      "preprocessing": [
+        {
+          "page": 1,
+          "rotation_applied": 0,
+          "skew_corrected_deg": -0.93,
+          "sharpness": 6082.2,
+          "contrast": 63.6,
+          "min_side_px": 1072.0,
+          "quality_score": 1.0
+        }
+      ],
+      "threshold": 0.85
+    },
+    {
+      "document_id": "e69dc7f300-p1",
+      "source_file": "ID.png",
+      "pages": [
+        1
+      ],
+      "classification": {
+        "document_type": "pan_card",
+        "confidence": 1.0,
+        "review_required": false,
+        "evidence": "Permanent Account Number Card",
+        "model_confidence": 1.0,
+        "keyword_vote": "pan_card"
+      },
+      "fields": {
+        "pan_number": {
+          "raw_value": "ABCDE1234F",
+          "normalized_value": "ABCDE1234F",
+          "confidence": 0.7,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Permanent Account Number Card [model value box adjacent to OCR-located label]",
+          "review_required": true,
+          "review_reasons": [
+            "confidence 0.70 below threshold 0.85",
+            "validation: 4th character 'D' is not a valid PAN holder-type code",
+            "format/checksum validation failed -> capped at 0.7"
+          ],
+          "handwritten": false,
+          "candidates": [
+            "ABCDE1234F"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 0.0,
+            "legibility": 1.0,
+            "ocr": 1.0,
+            "proximity": 1.0,
+            "image_quality": 0.955
+          },
+          "region": [
+            389,
+            256,
+            1115,
+            541
+          ]
+        },
+        "full_name": {
+          "raw_value": "MR. ASHOK",
+          "normalized_value": "MR. ASHOK",
+          "confidence": 0.976,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: नाम / Name [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": false,
+          "candidates": [
+            "MR. ASHOK"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 1.0,
+            "proximity": 0.8,
+            "image_quality": 0.955
+          },
+          "region": [
+            0,
+            550,
+            458,
+            670
+          ]
+        },
+        "fathers_name": {
+          "raw_value": "S/O KUMAR",
+          "normalized_value": "S/O KUMAR",
+          "confidence": 0.996,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: पिता का नाम / Father's Name [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": false,
+          "candidates": [
+            "S/O KUMAR"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 1.0,
+            "proximity": 1.0,
+            "image_quality": 0.955
+          },
+          "region": [
+            0,
+            613,
+            647,
+            829
+          ]
+        },
+        "date_of_birth": {
+          "raw_value": "18/12/1979",
+          "normalized_value": "1979-12-18",
+          "confidence": 0.936,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: जन्म की तारीख / Date of Birth [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": false,
+          "candidates": [
+            "18/12/1979"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.4,
+            "proximity": 1.0,
+            "image_quality": 0.955
+          },
+          "region": [
+            0,
+            741,
+            642,
+            979
+          ]
+        }
+      },
+      "auxiliary_fields": {},
+      "document_review_required": true,
+      "warnings": [],
+      "preprocessing": [
+        {
+          "page": 1,
+          "rotation_applied": 0,
+          "skew_corrected_deg": 0.0,
+          "sharpness": 1330.5,
+          "contrast": 51.2,
+          "min_side_px": 995.0,
+          "quality_score": 0.955
+        }
+      ],
+      "threshold": 0.85
+    },
+    {
+      "document_id": "c23b514209-p1",
+      "source_file": "Illustration.jpeg",
+      "pages": [
+        1
+      ],
+      "classification": {
+        "document_type": "benefit_illustration_declaration",
+        "confidence": 1.0,
+        "review_required": false,
+        "evidence": "Customer Declaration - Benefit Illustration",
+        "model_confidence": 1.0,
+        "keyword_vote": "benefit_illustration_declaration"
+      },
+      "fields": {
+        "application_number": {
+          "raw_value": "1500137601025",
+          "normalized_value": "1500137601025",
+          "confidence": 0.942,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Application/ Proposal Form Number: [model value box adjacent to OCR-located label (box given as [y0, x0, y1, x1])]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "1500137601025"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.077,
+            "proximity": 1.0,
+            "image_quality": 0.906
+          },
+          "region": [
+            49,
+            158,
+            744,
+            273
+          ]
+        },
+        "policyholder_name": {
+          "raw_value": "Ashok",
+          "normalized_value": "Ashok",
+          "confidence": 0.959,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Name of Policyhoder: [model value box adjacent to OCR-located label (box given as [y0, x0, y1, x1])]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "Ashok"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.4,
+            "proximity": 1.0,
+            "image_quality": 0.906
+          },
+          "region": [
+            0,
+            506,
+            454,
+            625
+          ]
+        },
+        "date": {
+          "raw_value": null,
+          "normalized_value": null,
+          "confidence": 0.4,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Date: [model value box adjacent to OCR-located label (box given as [y0, x0, y1, x1])]",
+          "review_required": true,
+          "review_reasons": [
+            "confidence 0.40 below threshold 0.85",
+            "independent reads disagree: vision_full_page='28/04/2024' | vision_crop_binarized='20/07/2016'",
+            "some passes returned no value: vision_crop",
+            "ambiguous characters reported: 4 or 6 at position 10",
+            "independent reads disagree (no majority) -> capped at 0.4"
+          ],
+          "handwritten": true,
+          "candidates": [
+            "28/04/2024",
+            "20/07/2016"
+          ],
+          "confidence_components": {
+            "agreement": 0.0,
+            "validation": 1.0,
+            "legibility": 0.85,
+            "ocr": 0.0,
+            "proximity": 1.0,
+            "image_quality": 0.906
+          },
+          "region": [
+            604,
+            518,
+            884,
+            633
+          ]
+        },
+        "place": {
+          "raw_value": "West Bihar",
+          "normalized_value": "West Bihar",
+          "confidence": 0.871,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Place: [model value box (label not confirmed by OCR) (box given as [y0, x0, y1, x1])]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "West Bihar"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 0.567,
+            "ocr": 0.444,
+            "proximity": 0.8,
+            "image_quality": 0.906
+          },
+          "region": [
+            643,
+            548,
+            872,
+            664
+          ]
+        }
+      },
+      "auxiliary_fields": {},
+      "document_review_required": true,
+      "warnings": [],
+      "preprocessing": [
+        {
+          "page": 1,
+          "rotation_applied": 0,
+          "skew_corrected_deg": -1.44,
+          "sharpness": 2631.9,
+          "contrast": 41.2,
+          "min_side_px": 1163.0,
+          "quality_score": 0.906
+        }
+      ],
+      "threshold": 0.85
+    },
+    {
+      "document_id": "6f40a695d2-p1",
+      "source_file": "Moral.jpeg",
+      "pages": [
+        1
+      ],
+      "classification": {
+        "document_type": "moral_hazard_questionnaire",
+        "confidence": 1.0,
+        "review_required": false,
+        "evidence": "Moral Hazard Questionnaire",
+        "model_confidence": 1.0,
+        "keyword_vote": "moral_hazard_questionnaire"
+      },
+      "fields": {
+        "application_number": {
+          "raw_value": "1500137601025",
+          "normalized_value": "1500137601025",
+          "confidence": 0.893,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: label not visible [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "1500137601025"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.0,
+            "proximity": 0.5,
+            "image_quality": 0.988
+          },
+          "region": [
+            329,
+            195,
+            715,
+            296
+          ]
+        },
+        "name_of_life_assured": {
+          "raw_value": "Ashok",
+          "normalized_value": "Ashok",
+          "confidence": 0.915,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: label not visible [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "Ashok"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.4,
+            "proximity": 0.5,
+            "image_quality": 0.988
+          },
+          "region": [
+            414,
+            221,
+            625,
+            329
+          ]
+        },
+        "nominee_relationship": {
+          "raw_value": "Nephew",
+          "normalized_value": "Nephew",
+          "confidence": 0.976,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract"
+          ],
+          "evidence": "p1: Please confirm exact relationship** of nominee [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "Nephew"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": null,
+            "legibility": 1.0,
+            "ocr": 0.667,
+            "proximity": 1.0,
+            "image_quality": 0.988
+          },
+          "region": [
+            108,
+            669,
+            890,
+            781
+          ]
+        },
+        "date": {
+          "raw_value": null,
+          "normalized_value": null,
+          "confidence": 0.4,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Date: (page 1) [model value box (label not confirmed by OCR)]",
+          "review_required": true,
+          "review_reasons": [
+            "confidence 0.40 below threshold 0.85",
+            "independent reads disagree: vision_full_page='26/04/2026' | vision_crop='25/04/2026' | vision_crop_binarized='24/04/2024'",
+            "label proximity not fully confirmed (model value box (label not confirmed by OCR))",
+            "independent reads disagree (no majority) -> capped at 0.4"
+          ],
+          "handwritten": true,
+          "candidates": [
+            "26/04/2026",
+            "25/04/2026",
+            "24/04/2024"
+          ],
+          "confidence_components": {
+            "agreement": 0.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.0,
+            "proximity": 0.8,
+            "image_quality": 0.988
+          },
+          "region": [
+            90,
+            865,
+            360,
+            980
+          ]
+        },
+        "place": {
+          "raw_value": "West Bihar",
+          "normalized_value": "West Bihar",
+          "confidence": 0.948,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Place: [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "West Bihar"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.444,
+            "proximity": 0.8,
+            "image_quality": 0.988
+          },
+          "region": [
+            87,
+            899,
+            388,
+            1018
+          ]
+        }
+      },
+      "auxiliary_fields": {},
+      "document_review_required": true,
+      "warnings": [],
+      "preprocessing": [
+        {
+          "page": 1,
+          "rotation_applied": 0,
+          "skew_corrected_deg": -0.45,
+          "sharpness": 4329.1,
+          "contrast": 57.7,
+          "min_side_px": 1209.0,
+          "quality_score": 0.988
+        }
+      ],
+      "threshold": 0.85
+    },
+    {
+      "document_id": "9e6f275cfb-p1-2",
+      "source_file": "Proposal Ashok.pdf",
+      "pages": [
+        1,
+        2
+      ],
+      "classification": {
+        "document_type": "unknown_or_other",
+        "confidence": 0.6,
+        "review_required": true,
+        "evidence": "Customer Declaration - Application/Proposal Form",
+        "model_confidence": 1.0,
+        "keyword_vote": "nach_ecs_mandate"
+      },
+      "fields": {},
+      "auxiliary_fields": {},
+      "document_review_required": true,
+      "warnings": [
+        "OCR keyword classifier suggests 'nach_ecs_mandate' but the vision model says 'unknown_or_other'",
+        "document type is not one of the ten supported types",
+        "unsupported document: no fields extracted; routed to the human-review queue"
+      ],
+      "preprocessing": [
+        {
+          "page": 1,
+          "rotation_applied": 0,
+          "skew_corrected_deg": 1.52,
+          "sharpness": 2008.6,
+          "contrast": 64.1,
+          "min_side_px": 1653.0,
+          "quality_score": 1.0
+        },
+        {
+          "page": 2,
+          "rotation_applied": 0,
+          "skew_corrected_deg": 1.97,
+          "sharpness": 1224.3,
+          "contrast": 54.5,
+          "min_side_px": 1653.0,
+          "quality_score": 0.972
+        }
+      ],
+      "threshold": 0.85
+    },
+    {
+      "document_id": "342dc55090-p1",
+      "source_file": "split.jpeg",
+      "pages": [
+        1
+      ],
+      "classification": {
+        "document_type": "multiple_policies_consent",
+        "confidence": 0.994,
+        "review_required": false,
+        "evidence": "Split & Multiple Policies - Customer Consent form",
+        "model_confidence": 0.99,
+        "keyword_vote": "multiple_policies_consent"
+      },
+      "fields": {
+        "proposer_name": {
+          "raw_value": "Ashok",
+          "normalized_value": "Ashok",
+          "confidence": 0.987,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Proposer / Life Assured Name: [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "Ashok"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 1.0,
+            "proximity": 1.0,
+            "image_quality": 0.878
+          },
+          "region": [
+            161,
+            244,
+            723,
+            355
+          ]
+        },
+        "reason_for_multiple_policies": {
+          "raw_value": "Financial Planning (viz. payout on different life stages, different payment terms,etc.)",
+          "normalized_value": "Financial Planning",
+          "confidence": 0.987,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Financial Planning (viz. payout on different life stages, different payment terms,etc.) [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "Financial Planning",
+            "Financial Planning (viz. payout on different life stages, different payment terms,etc.)"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 1.0,
+            "proximity": 1.0,
+            "image_quality": 0.878
+          },
+          "region": [
+            0,
+            360,
+            1138,
+            685
+          ]
+        },
+        "date": {
+          "raw_value": "26/04/2026.",
+          "normalized_value": "2026-04-26",
+          "confidence": 0.935,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Date: [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "26/04/2026",
+            "26/04/2026."
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.4,
+            "proximity": 0.8,
+            "image_quality": 0.878
+          },
+          "region": [
+            161,
+            987,
+            481,
+            1124
+          ]
+        },
+        "place": {
+          "raw_value": "West Bihar,",
+          "normalized_value": "West Bihar",
+          "confidence": 0.975,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Place: [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "West Bihar",
+            "West Bihar,",
+            "West Bihar."
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.778,
+            "proximity": 1.0,
+            "image_quality": 0.878
+          },
+          "region": [
+            591,
+            995,
+            1041,
+            1099
+          ]
+        }
+      },
+      "auxiliary_fields": {},
+      "document_review_required": false,
+      "warnings": [],
+      "preprocessing": [
+        {
+          "page": 1,
+          "rotation_applied": 0,
+          "skew_corrected_deg": 1.33,
+          "sharpness": 1586.0,
+          "contrast": 35.6,
+          "min_side_px": 1138.0,
+          "quality_score": 0.878
+        }
+      ],
+      "threshold": 0.85
+    },
+    {
+      "document_id": "5c26b806d5-p1",
+      "source_file": "suitability.jpeg",
+      "pages": [
+        1
+      ],
+      "classification": {
+        "document_type": "suitability_profiler_declaration",
+        "confidence": 1.0,
+        "review_required": false,
+        "evidence": "Customer Declaration - Suitability Profiler",
+        "model_confidence": 1.0,
+        "keyword_vote": "suitability_profiler_declaration"
+      },
+      "fields": {
+        "application_number": {
+          "raw_value": "1500137601025",
+          "normalized_value": "1500137601025",
+          "confidence": 0.935,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Application/ Proposal Form Number: [model value box adjacent to OCR-located label]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "1500137601025"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.0,
+            "proximity": 1.0,
+            "image_quality": 0.878
+          },
+          "region": [
+            69,
+            174,
+            775,
+            274
+          ]
+        },
+        "name_of_life_assured": {
+          "raw_value": "Ashok",
+          "normalized_value": "Ashok",
+          "confidence": 0.931,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "validator"
+          ],
+          "evidence": "p1: Ashok [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "Ashok"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": null,
+            "proximity": 0.5,
+            "image_quality": 0.878
+          },
+          "region": [
+            232,
+            381,
+            427,
+            463
+          ]
+        },
+        "name_of_agent_sp": {
+          "raw_value": "Ramesh Kumar.",
+          "normalized_value": "Ramesh Kumar",
+          "confidence": 0.915,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Ramesh Kumar [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "Ramesh Kumar.",
+            "Ramesh Kumar"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.636,
+            "proximity": 0.5,
+            "image_quality": 0.878
+          },
+          "region": [
+            209,
+            473,
+            582,
+            588
+          ]
+        },
+        "date": {
+          "raw_value": "26/04/26",
+          "normalized_value": "2026-04-26",
+          "confidence": 0.793,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Date: [model value box adjacent to OCR-located label]",
+          "review_required": true,
+          "review_reasons": [
+            "confidence 0.79 below threshold 0.85",
+            "ambiguous characters reported: 6 or 4 at position 8"
+          ],
+          "handwritten": true,
+          "candidates": [
+            "26/04/26",
+            "26/01/16"
+          ],
+          "confidence_components": {
+            "agreement": 0.667,
+            "validation": 1.0,
+            "legibility": 0.85,
+            "ocr": 0.1,
+            "proximity": 1.0,
+            "image_quality": 0.878
+          },
+          "region": [
+            620,
+            361,
+            888,
+            483
+          ]
+        },
+        "place": {
+          "raw_value": "West Bihar",
+          "normalized_value": "West Bihar",
+          "confidence": 0.931,
+          "page": 1,
+          "method": [
+            "vision_full_page",
+            "vision_crop",
+            "vision_crop_binarized",
+            "ocr_tesseract",
+            "validator"
+          ],
+          "evidence": "p1: Place: [model value box (label not confirmed by OCR)]",
+          "review_required": false,
+          "review_reasons": [],
+          "handwritten": true,
+          "candidates": [
+            "West Bihar"
+          ],
+          "confidence_components": {
+            "agreement": 1.0,
+            "validation": 1.0,
+            "legibility": 1.0,
+            "ocr": 0.333,
+            "proximity": 0.8,
+            "image_quality": 0.878
+          },
+          "region": [
+            667,
+            393,
+            893,
+            497
+          ]
+        }
+      },
+      "auxiliary_fields": {},
+      "document_review_required": true,
+      "warnings": [],
+      "preprocessing": [
+        {
+          "page": 1,
+          "rotation_applied": 0,
+          "skew_corrected_deg": -1.42,
+          "sharpness": 1513.4,
+          "contrast": 35.7,
+          "min_side_px": 1109.0,
+          "quality_score": 0.878
+        }
+      ],
+      "threshold": 0.85
+    }
+  ],
+  "file_errors": {}
+}

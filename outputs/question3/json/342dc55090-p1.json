@@ -1,0 +1,172 @@
+{
+  "document_id": "342dc55090-p1",
+  "source_file": "split.jpeg",
+  "pages": [
+    1
+  ],
+  "classification": {
+    "document_type": "multiple_policies_consent",
+    "confidence": 0.994,
+    "review_required": false,
+    "evidence": "Split & Multiple Policies - Customer Consent form",
+    "model_confidence": 0.99,
+    "keyword_vote": "multiple_policies_consent"
+  },
+  "fields": {
+    "proposer_name": {
+      "raw_value": "Ashok",
+      "normalized_value": "Ashok",
+      "confidence": 0.987,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Proposer / Life Assured Name: [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "Ashok"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 1.0,
+        "proximity": 1.0,
+        "image_quality": 0.878
+      },
+      "region": [
+        161,
+        244,
+        723,
+        355
+      ]
+    },
+    "reason_for_multiple_policies": {
+      "raw_value": "Financial Planning (viz. payout on different life stages, different payment terms,etc.)",
+      "normalized_value": "Financial Planning",
+      "confidence": 0.987,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Financial Planning (viz. payout on different life stages, different payment terms,etc.) [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "Financial Planning",
+        "Financial Planning (viz. payout on different life stages, different payment terms,etc.)"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 1.0,
+        "proximity": 1.0,
+        "image_quality": 0.878
+      },
+      "region": [
+        0,
+        360,
+        1138,
+        685
+      ]
+    },
+    "date": {
+      "raw_value": "26/04/2026.",
+      "normalized_value": "2026-04-26",
+      "confidence": 0.935,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Date: [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "26/04/2026",
+        "26/04/2026."
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.4,
+        "proximity": 0.8,
+        "image_quality": 0.878
+      },
+      "region": [
+        161,
+        987,
+        481,
+        1124
+      ]
+    },
+    "place": {
+      "raw_value": "West Bihar,",
+      "normalized_value": "West Bihar",
+      "confidence": 0.975,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Place: [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "West Bihar",
+        "West Bihar,",
+        "West Bihar."
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.778,
+        "proximity": 1.0,
+        "image_quality": 0.878
+      },
+      "region": [
+        591,
+        995,
+        1041,
+        1099
+      ]
+    }
+  },
+  "auxiliary_fields": {},
+  "document_review_required": false,
+  "warnings": [],
+  "preprocessing": [
+    {
+      "page": 1,
+      "rotation_applied": 0,
+      "skew_corrected_deg": 1.33,
+      "sharpness": 1586.0,
+      "contrast": 35.6,
+      "min_side_px": 1138.0,
+      "quality_score": 0.878
+    }
+  ],
+  "threshold": 0.85
+}

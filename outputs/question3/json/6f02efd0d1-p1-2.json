@@ -1,0 +1,45 @@
+{
+  "document_id": "6f02efd0d1-p1-2",
+  "source_file": "Assignment Ashok.pdf",
+  "pages": [
+    1,
+    2
+  ],
+  "classification": {
+    "document_type": "unknown_or_other",
+    "confidence": 0.794,
+    "review_required": true,
+    "evidence": "ASSIGNMENT REQUEST FORM",
+    "model_confidence": 0.99,
+    "keyword_vote": null
+  },
+  "fields": {},
+  "auxiliary_fields": {},
+  "document_review_required": true,
+  "warnings": [
+    "OCR keyword classifier found no decisive printed keywords",
+    "document type is not one of the ten supported types",
+    "unsupported document: no fields extracted; routed to the human-review queue"
+  ],
+  "preprocessing": [
+    {
+      "page": 1,
+      "rotation_applied": 0,
+      "skew_corrected_deg": -1.19,
+      "sharpness": 653.8,
+      "contrast": 44.9,
+      "min_side_px": 1653.0,
+      "quality_score": 0.924
+    },
+    {
+      "page": 2,
+      "rotation_applied": 0,
+      "skew_corrected_deg": 0.0,
+      "sharpness": 865.6,
+      "contrast": 42.7,
+      "min_side_px": 1653.0,
+      "quality_score": 0.913
+    }
+  ],
+  "threshold": 0.85
+}

@@ -1,0 +1,169 @@
+{
+  "document_id": "97c45b128a-p1",
+  "source_file": "Aadhar.png",
+  "pages": [
+    1
+  ],
+  "classification": {
+    "document_type": "aadhaar_card",
+    "confidence": 0.994,
+    "review_required": false,
+    "evidence": "GOVERNMENT OF INDIA AADHAAR UNIQUE IDENTIFICATION AUTHORITY OF INDIA",
+    "model_confidence": 0.99,
+    "keyword_vote": "aadhaar_card"
+  },
+  "fields": {
+    "aadhaar_number": {
+      "raw_value": "1234 5678 9012",
+      "normalized_value": "1234 5678 9012",
+      "confidence": 0.7,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: आधार संख्या / Aadhaar Number [model value box adjacent to OCR-located label]",
+      "review_required": true,
+      "review_reasons": [
+        "confidence 0.70 below threshold 0.85",
+        "validation: Aadhaar numbers never start with 0 or 1",
+        "validation: Verhoeff checksum failed",
+        "format/checksum validation failed -> capped at 0.7"
+      ],
+      "handwritten": false,
+      "candidates": [
+        "1234 5678 9012"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 0.0,
+        "legibility": 1.0,
+        "ocr": 1.0,
+        "proximity": 1.0,
+        "image_quality": 0.897
+      },
+      "region": [
+        308,
+        387,
+        604,
+        471
+      ]
+    },
+    "full_name": {
+      "raw_value": "Mr. Ashok",
+      "normalized_value": "Mr. Ashok",
+      "confidence": 0.99,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Name / नाम [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": false,
+      "candidates": [
+        "Mr. Ashok"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 1.0,
+        "proximity": 1.0,
+        "image_quality": 0.897
+      },
+      "region": [
+        189,
+        62,
+        365,
+        160
+      ]
+    },
+    "date_of_birth": {
+      "raw_value": "18/12/1979",
+      "normalized_value": "1979-12-18",
+      "confidence": 0.93,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Date of Birth / जन्म तिथि [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": false,
+      "candidates": [
+        "18/12/1979"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.4,
+        "proximity": 1.0,
+        "image_quality": 0.897
+      },
+      "region": [
+        188,
+        115,
+        371,
+        217
+      ]
+    },
+    "address": {
+      "raw_value": "S/O Kumar, Kataia, West Bihar India - 841543",
+      "normalized_value": "S/O Kumar, Kataia, West Bihar India - 841543",
+      "confidence": 0.99,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: पता / Address [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": false,
+      "candidates": [
+        "S/O Kumar, Kataia, West Bihar India - 841543"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 1.0,
+        "proximity": 1.0,
+        "image_quality": 0.897
+      },
+      "region": [
+        0,
+        347,
+        207,
+        588
+      ]
+    }
+  },
+  "auxiliary_fields": {},
+  "document_review_required": true,
+  "warnings": [],
+  "preprocessing": [
+    {
+      "page": 1,
+      "rotation_applied": 0,
+      "skew_corrected_deg": 0.0,
+      "sharpness": 4332.1,
+      "contrast": 58.4,
+      "min_side_px": 619.0,
+      "quality_score": 0.897
+    }
+  ],
+  "threshold": 0.85
+}

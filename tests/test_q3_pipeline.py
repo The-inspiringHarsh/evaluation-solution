@@ -301,3 +301,27 @@ def test_label_proximity_never_turns_a_wide_box_into_a_sliver():
 
     # requested order gives a wide date box; a stray label match next to the swapped reading must not win
     assert _model_box([697, 220, 792, 248], (1000, 1000), (180, 700, 215, 790)) == ((697, 220, 792, 248), False)
+
+
+def test_ambiguity_reason_names_the_characters_from_the_read_that_reported_them(fake_llm_factory):
+    full = {
+        "bank_account_number": "31004258912",
+        "ifsc_code": "SBIN0227112",
+        "bank_name": "State Bank of India",
+        "amount_in_figures": "50,000",
+        "frequency": "As & when presented",
+        "amount_in_words": "Fifty thousand only",
+    }
+
+    class AmbiguousBinarized(VisionScript):
+        def _crop_answer(self, key, table):
+            answer = super()._crop_answer(key, table)
+            if table is self.binarized_values and key == "ifsc_code":
+                answer["ambiguous_characters"] = ["1 or I at position 9"]
+            return answer
+
+    llm = fake_llm_factory(AmbiguousBinarized(DocumentType.NACH_MANDATE, full, binarized_values={"ifsc_code": "SBIN0227112"}))
+    img = png_bytes(make_text_image(["NACH MANDATE INSTRUCTION", "UMRN", "Bank a/c number", "IFSC  or MICR", "FREQUENCY"]))
+    ifsc = process_files([("m.png", img)], llm, 0.999, crop_reads="batched").documents[0].fields["ifsc_code"]
+    notes = [r for r in ifsc.review_reasons if r.startswith("ambiguous characters reported")]
+    assert notes == ["ambiguous characters reported: 1 or I at position 9"]

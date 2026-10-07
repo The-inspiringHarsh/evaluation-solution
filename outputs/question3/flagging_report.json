@@ -1,0 +1,126 @@
+{
+  "threshold": 0.85,
+  "flag_count": 10,
+  "flags": [
+    {
+      "source_file": "Aadhar.png",
+      "document_id": "97c45b128a-p1",
+      "page": "1",
+      "predicted_document_type": "aadhaar_card",
+      "field_name": "aadhaar_number",
+      "raw_candidate": "1234 5678 9012",
+      "confidence": 0.7,
+      "threshold": 0.85,
+      "review_reason": "confidence 0.70 below threshold 0.85; validation: Aadhaar numbers never start with 0 or 1; validation: Verhoeff checksum failed; format/checksum validation failed -> capped at 0.7",
+      "suggested_reviewer_action": "Visually verify 'aadhaar_number' against the source image and approve or correct it."
+    },
+    {
+      "source_file": "Assignment Ashok.pdf",
+      "document_id": "6f02efd0d1-p1-2",
+      "page": "1,2",
+      "predicted_document_type": "unknown_or_other",
+      "field_name": "(document classification)",
+      "raw_candidate": "ASSIGNMENT REQUEST FORM",
+      "confidence": 0.794,
+      "threshold": 0.85,
+      "review_reason": "OCR keyword classifier found no decisive printed keywords; document type is not one of the ten supported types; unsupported document: no fields extracted; routed to the human-review queue",
+      "suggested_reviewer_action": "Confirm the document type; route to the correct workflow or reject it."
+    },
+    {
+      "source_file": "ChatGPT Image May 2, 2026, 03_52_54 PM.png",
+      "document_id": "22ea903056-p1",
+      "page": "1",
+      "predicted_document_type": "passport",
+      "field_name": "mrz_line_2",
+      "raw_candidate": "X1234567<7IND7912185M3001010<<<<<<<<<<<<<<08",
+      "confidence": 0.7,
+      "threshold": 0.85,
+      "review_reason": "confidence 0.70 below threshold 0.85; validation: MRZ birth date check digit mismatch (expected 2, found '5'); validation: MRZ expiry date check digit mismatch (expected 9, found '0'); label proximity not fully confirmed (model value box (label not confirmed by OCR)); format/checksum validation failed -> capped at 0.7",
+      "suggested_reviewer_action": "Visually verify 'mrz_line_2' against the source image and approve or correct it."
+    },
+    {
+      "source_file": "ECS.jpeg",
+      "document_id": "18900c6e91-p1",
+      "page": "1",
+      "predicted_document_type": "nach_ecs_mandate",
+      "field_name": "ifsc_code",
+      "raw_candidate": "SBIN0227112",
+      "confidence": 0.747,
+      "threshold": 0.85,
+      "review_reason": "confidence 0.75 below threshold 0.85; ambiguous characters reported: I or 1 at position 3; 1 or I at position 9; 1 or I at position 10; label proximity not fully confirmed (model value box (label not confirmed by OCR))",
+      "suggested_reviewer_action": "Visually verify 'ifsc_code' against the source image and approve or correct it."
+    },
+    {
+      "source_file": "Fatca.jpeg",
+      "document_id": "fc98ff2ebe-p1",
+      "page": "1",
+      "predicted_document_type": "fatca_annexure",
+      "field_name": "policy_number",
+      "raw_candidate": "1500137601025",
+      "confidence": 0.804,
+      "threshold": 0.85,
+      "review_reason": "confidence 0.80 below threshold 0.85; label proximity not fully confirmed (model value box (label not confirmed by OCR)); review hint only (not used to fill): application/policy number read confidently elsewhere in this batch as 1500137601025",
+      "suggested_reviewer_action": "Visually verify 'policy_number' against the source image and approve or correct it."
+    },
+    {
+      "source_file": "ID.png",
+      "document_id": "e69dc7f300-p1",
+      "page": "1",
+      "predicted_document_type": "pan_card",
+      "field_name": "pan_number",
+      "raw_candidate": "ABCDE1234F",
+      "confidence": 0.7,
+      "threshold": 0.85,
+      "review_reason": "confidence 0.70 below threshold 0.85; validation: 4th character 'D' is not a valid PAN holder-type code; format/checksum validation failed -> capped at 0.7",
+      "suggested_reviewer_action": "Visually verify 'pan_number' against the source image and approve or correct it."
+    },
+    {
+      "source_file": "Illustration.jpeg",
+      "document_id": "c23b514209-p1",
+      "page": "1",
+      "predicted_document_type": "benefit_illustration_declaration",
+      "field_name": "date",
+      "raw_candidate": "28/04/2024 | 20/07/2016",
+      "confidence": 0.4,
+      "threshold": 0.85,
+      "review_reason": "confidence 0.40 below threshold 0.85; independent reads disagree: vision_full_page='28/04/2024' | vision_crop_binarized='20/07/2016'; some passes returned no value: vision_crop; ambiguous characters reported: 4 or 6 at position 10; independent reads disagree (no majority) -> capped at 0.4",
+      "suggested_reviewer_action": "Visually verify 'date' against the source image and approve or correct it."
+    },
+    {
+      "source_file": "Moral.jpeg",
+      "document_id": "6f40a695d2-p1",
+      "page": "1",
+      "predicted_document_type": "moral_hazard_questionnaire",
+      "field_name": "date",
+      "raw_candidate": "26/04/2026 | 25/04/2026 | 24/04/2024",
+      "confidence": 0.4,
+      "threshold": 0.85,
+      "review_reason": "confidence 0.40 below threshold 0.85; independent reads disagree: vision_full_page='26/04/2026' | vision_crop='25/04/2026' | vision_crop_binarized='24/04/2024'; label proximity not fully confirmed (model value box (label not confirmed by OCR)); independent reads disagree (no majority) -> capped at 0.4",
+      "suggested_reviewer_action": "Visually verify 'date' against the source image and approve or correct it."
+    },
+    {
+      "source_file": "Proposal Ashok.pdf",
+      "document_id": "9e6f275cfb-p1-2",
+      "page": "1,2",
+      "predicted_document_type": "unknown_or_other",
+      "field_name": "(document classification)",
+      "raw_candidate": "Customer Declaration - Application/Proposal Form",
+      "confidence": 0.6,
+      "threshold": 0.85,
+      "review_reason": "OCR keyword classifier suggests 'nach_ecs_mandate' but the vision model says 'unknown_or_other'; document type is not one of the ten supported types; unsupported document: no fields extracted; routed to the human-review queue",
+      "suggested_reviewer_action": "Confirm the document type; route to the correct workflow or reject it."
+    },
+    {
+      "source_file": "suitability.jpeg",
+      "document_id": "5c26b806d5-p1",
+      "page": "1",
+      "predicted_document_type": "suitability_profiler_declaration",
+      "field_name": "date",
+      "raw_candidate": "26/04/26",
+      "confidence": 0.793,
+      "threshold": 0.85,
+      "review_reason": "confidence 0.79 below threshold 0.85; ambiguous characters reported: 6 or 4 at position 8",
+      "suggested_reviewer_action": "Visually verify 'date' against the source image and approve or correct it."
+    }
+  ]
+}

@@ -1,0 +1,206 @@
+{
+  "document_id": "5c26b806d5-p1",
+  "source_file": "suitability.jpeg",
+  "pages": [
+    1
+  ],
+  "classification": {
+    "document_type": "suitability_profiler_declaration",
+    "confidence": 1.0,
+    "review_required": false,
+    "evidence": "Customer Declaration - Suitability Profiler",
+    "model_confidence": 1.0,
+    "keyword_vote": "suitability_profiler_declaration"
+  },
+  "fields": {
+    "application_number": {
+      "raw_value": "1500137601025",
+      "normalized_value": "1500137601025",
+      "confidence": 0.935,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Application/ Proposal Form Number: [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "1500137601025"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.0,
+        "proximity": 1.0,
+        "image_quality": 0.878
+      },
+      "region": [
+        69,
+        174,
+        775,
+        274
+      ]
+    },
+    "name_of_life_assured": {
+      "raw_value": "Ashok",
+      "normalized_value": "Ashok",
+      "confidence": 0.931,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "validator"
+      ],
+      "evidence": "p1: Ashok [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "Ashok"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": null,
+        "proximity": 0.5,
+        "image_quality": 0.878
+      },
+      "region": [
+        232,
+        381,
+        427,
+        463
+      ]
+    },
+    "name_of_agent_sp": {
+      "raw_value": "Ramesh Kumar.",
+      "normalized_value": "Ramesh Kumar",
+      "confidence": 0.915,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Ramesh Kumar [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "Ramesh Kumar.",
+        "Ramesh Kumar"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.636,
+        "proximity": 0.5,
+        "image_quality": 0.878
+      },
+      "region": [
+        209,
+        473,
+        582,
+        588
+      ]
+    },
+    "date": {
+      "raw_value": "26/04/26",
+      "normalized_value": "2026-04-26",
+      "confidence": 0.793,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Date: [model value box adjacent to OCR-located label]",
+      "review_required": true,
+      "review_reasons": [
+        "confidence 0.79 below threshold 0.85",
+        "ambiguous characters reported: 6 or 4 at position 8"
+      ],
+      "handwritten": true,
+      "candidates": [
+        "26/04/26",
+        "26/01/16"
+      ],
+      "confidence_components": {
+        "agreement": 0.667,
+        "validation": 1.0,
+        "legibility": 0.85,
+        "ocr": 0.1,
+        "proximity": 1.0,
+        "image_quality": 0.878
+      },
+      "region": [
+        620,
+        361,
+        888,
+        483
+      ]
+    },
+    "place": {
+      "raw_value": "West Bihar",
+      "normalized_value": "West Bihar",
+      "confidence": 0.931,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Place: [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "West Bihar"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.333,
+        "proximity": 0.8,
+        "image_quality": 0.878
+      },
+      "region": [
+        667,
+        393,
+        893,
+        497
+      ]
+    }
+  },
+  "auxiliary_fields": {},
+  "document_review_required": true,
+  "warnings": [],
+  "preprocessing": [
+    {
+      "page": 1,
+      "rotation_applied": 0,
+      "skew_corrected_deg": -1.42,
+      "sharpness": 1513.4,
+      "contrast": 35.7,
+      "min_side_px": 1109.0,
+      "quality_score": 0.878
+    }
+  ],
+  "threshold": 0.85
+}

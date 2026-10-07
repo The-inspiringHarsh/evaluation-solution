@@ -1,0 +1,209 @@
+{
+  "document_id": "fc98ff2ebe-p1",
+  "source_file": "Fatca.jpeg",
+  "pages": [
+    1
+  ],
+  "classification": {
+    "document_type": "fatca_annexure",
+    "confidence": 1.0,
+    "review_required": false,
+    "evidence": "ANNEXURE FORM (Information required for reporting under Section 285BA of the Income Tax Act, 1961)",
+    "model_confidence": 1.0,
+    "keyword_vote": "fatca_annexure"
+  },
+  "fields": {
+    "policy_number": {
+      "raw_value": "1500137601025",
+      "normalized_value": "1500137601025",
+      "confidence": 0.804,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Policy No: 1500137601025 [model value box (label not confirmed by OCR)]",
+      "review_required": true,
+      "review_reasons": [
+        "confidence 0.80 below threshold 0.85",
+        "label proximity not fully confirmed (model value box (label not confirmed by OCR))",
+        "review hint only (not used to fill): application/policy number read confidently elsewhere in this batch as 1500137601025"
+      ],
+      "handwritten": true,
+      "candidates": [
+        "1500137601025",
+        "1500157601025"
+      ],
+      "confidence_components": {
+        "agreement": 0.667,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.0,
+        "proximity": 0.8,
+        "image_quality": 1.0
+      },
+      "region": [
+        55,
+        262,
+        364,
+        359
+      ]
+    },
+    "tin_pan": {
+      "raw_value": "BPQPD 3051R,",
+      "normalized_value": "BPQPD3051R",
+      "confidence": 0.921,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: BPQPD 3051R, [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "BPQPD 3051R",
+        "BPQPD 3051R,",
+        "BPQPD3051R"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.5,
+        "proximity": 0.5,
+        "image_quality": 1.0
+      },
+      "region": [
+        174,
+        563,
+        493,
+        671
+      ]
+    },
+    "fathers_name": {
+      "raw_value": "Arjun Das Kumar",
+      "normalized_value": "Arjun Das Kumar",
+      "confidence": 0.971,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: me: Arjun Das Kumar [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "Arjun Das Kumar"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.846,
+        "proximity": 0.8,
+        "image_quality": 1.0
+      },
+      "region": [
+        116,
+        697,
+        476,
+        801
+      ]
+    },
+    "place_of_birth": {
+      "raw_value": "West Bihar.",
+      "normalized_value": "West Bihar",
+      "confidence": 0.977,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: c) Place of birth: West Bihar. [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "West Bihar",
+        "West Bihar."
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.556,
+        "proximity": 1.0,
+        "image_quality": 1.0
+      },
+      "region": [
+        740,
+        690,
+        1072,
+        798
+      ]
+    },
+    "nationality": {
+      "raw_value": "Indian",
+      "normalized_value": "Indian",
+      "confidence": 0.978,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract"
+      ],
+      "evidence": "p1: e) Nationality: Indian [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "Indian"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": null,
+        "legibility": 1.0,
+        "ocr": 0.667,
+        "proximity": 1.0,
+        "image_quality": 1.0
+      },
+      "region": [
+        351,
+        720,
+        721,
+        831
+      ]
+    }
+  },
+  "auxiliary_fields": {},
+  "document_review_required": true,
+  "warnings": [],
+  "preprocessing": [
+    {
+      "page": 1,
+      "rotation_applied": 0,
+      "skew_corrected_deg": -0.93,
+      "sharpness": 6082.2,
+      "contrast": 63.6,
+      "min_side_px": 1072.0,
+      "quality_score": 1.0
+    }
+  ],
+  "threshold": 0.85
+}

@@ -305,6 +305,8 @@ screenshot index.
 - Web search needs network access to the chosen provider; DuckDuckGo results are snippets only.
   Free-tier Gemini keys have no Google Search grounding, so with such a key search relies on the
   DuckDuckGo fallback, which needs ordinary internet access.
+  When search is unavailable the answer says so, but the summary model may still add a one-line
+  definition from its own knowledge (seen with Flash-Lite in screenshot 2); it is not cited as web context.
 - The committed outputs were produced with a free-tier Gemini key: Flash models only, 20 requests per
   model per day and 5 per minute (failed "high demand" requests count too). The run therefore used
   batched crop reads and spread calls over several Flash models. `all_results.json` → `run` counts the
@@ -332,7 +334,7 @@ screenshot index.
 | # | Screenshot |
 |---|---|
 | 1 | [Inventory chat – numerical answer with generated pandas code](screenshots/01_inventory_numeric_code.png) |
-| 2 | [Inventory chat – web search with clickable citations](screenshots/02_inventory_web_search.png) |
+| 2 | [Inventory chat – web-search question (search unavailable on the free tier here)](screenshots/02_inventory_web_search.png) |
 | 3 | [Document batch – classification summary](screenshots/03_documents_classification.png) |
 | 4 | [Handwritten-field extraction with confidence scores](screenshots/04_handwritten_fields.png) |
 | 5 | [Human-review queue](screenshots/05_review_queue.png) |

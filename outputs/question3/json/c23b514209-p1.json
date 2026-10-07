@@ -1,0 +1,175 @@
+{
+  "document_id": "c23b514209-p1",
+  "source_file": "Illustration.jpeg",
+  "pages": [
+    1
+  ],
+  "classification": {
+    "document_type": "benefit_illustration_declaration",
+    "confidence": 1.0,
+    "review_required": false,
+    "evidence": "Customer Declaration - Benefit Illustration",
+    "model_confidence": 1.0,
+    "keyword_vote": "benefit_illustration_declaration"
+  },
+  "fields": {
+    "application_number": {
+      "raw_value": "1500137601025",
+      "normalized_value": "1500137601025",
+      "confidence": 0.942,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Application/ Proposal Form Number: [model value box adjacent to OCR-located label (box given as [y0, x0, y1, x1])]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "1500137601025"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.077,
+        "proximity": 1.0,
+        "image_quality": 0.906
+      },
+      "region": [
+        49,
+        158,
+        744,
+        273
+      ]
+    },
+    "policyholder_name": {
+      "raw_value": "Ashok",
+      "normalized_value": "Ashok",
+      "confidence": 0.959,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Name of Policyhoder: [model value box adjacent to OCR-located label (box given as [y0, x0, y1, x1])]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "Ashok"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.4,
+        "proximity": 1.0,
+        "image_quality": 0.906
+      },
+      "region": [
+        0,
+        506,
+        454,
+        625
+      ]
+    },
+    "date": {
+      "raw_value": null,
+      "normalized_value": null,
+      "confidence": 0.4,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Date: [model value box adjacent to OCR-located label (box given as [y0, x0, y1, x1])]",
+      "review_required": true,
+      "review_reasons": [
+        "confidence 0.40 below threshold 0.85",
+        "independent reads disagree: vision_full_page='28/04/2024' | vision_crop_binarized='20/07/2016'",
+        "some passes returned no value: vision_crop",
+        "ambiguous characters reported: 4 or 6 at position 10",
+        "independent reads disagree (no majority) -> capped at 0.4"
+      ],
+      "handwritten": true,
+      "candidates": [
+        "28/04/2024",
+        "20/07/2016"
+      ],
+      "confidence_components": {
+        "agreement": 0.0,
+        "validation": 1.0,
+        "legibility": 0.85,
+        "ocr": 0.0,
+        "proximity": 1.0,
+        "image_quality": 0.906
+      },
+      "region": [
+        604,
+        518,
+        884,
+        633
+      ]
+    },
+    "place": {
+      "raw_value": "West Bihar",
+      "normalized_value": "West Bihar",
+      "confidence": 0.871,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Place: [model value box (label not confirmed by OCR) (box given as [y0, x0, y1, x1])]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "West Bihar"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 0.567,
+        "ocr": 0.444,
+        "proximity": 0.8,
+        "image_quality": 0.906
+      },
+      "region": [
+        643,
+        548,
+        872,
+        664
+      ]
+    }
+  },
+  "auxiliary_fields": {},
+  "document_review_required": true,
+  "warnings": [],
+  "preprocessing": [
+    {
+      "page": 1,
+      "rotation_applied": 0,
+      "skew_corrected_deg": -1.44,
+      "sharpness": 2631.9,
+      "contrast": 41.2,
+      "min_side_px": 1163.0,
+      "quality_score": 0.906
+    }
+  ],
+  "threshold": 0.85
+}

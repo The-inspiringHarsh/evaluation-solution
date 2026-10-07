@@ -592,7 +592,8 @@ def resolve_field(
     if ev.some_read_empty:
         reasons.append("some passes returned no value: " + ", ".join(r.method for r in vision if not keys[id(r)]))
     if ambiguous_count:
-        reasons.append("ambiguous characters reported: " + "; ".join(agreeing[0].ambiguous[:4]))
+        most = max(agreeing, key=lambda r: len(r.ambiguous))  # the read whose notes set ambiguous_count
+        reasons.append("ambiguous characters reported: " + "; ".join(most.ambiguous[:4]))
     if proximity < 1.0:
         reasons.append(f"label proximity not fully confirmed ({region_desc})")
     reasons.extend(ev.caps_applied)

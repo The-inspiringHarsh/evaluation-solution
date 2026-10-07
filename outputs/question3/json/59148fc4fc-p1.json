@@ -1,0 +1,166 @@
+{
+  "document_id": "59148fc4fc-p1",
+  "source_file": "ChatGPT Image May 2, 2026, 03_43_11 PM.png",
+  "pages": [
+    1
+  ],
+  "classification": {
+    "document_type": "driving_licence",
+    "confidence": 0.994,
+    "review_required": false,
+    "evidence": "INDIAN UNION DRIVING LICENCE MAHARASHTRA STATE",
+    "model_confidence": 0.99,
+    "keyword_vote": "driving_licence"
+  },
+  "fields": {
+    "dl_number": {
+      "raw_value": "MH12 2021 0001234",
+      "normalized_value": "MH12 2021 0001234",
+      "confidence": 1.0,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: DL No. [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": false,
+      "candidates": [
+        "MH12 2021 0001234"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 1.0,
+        "proximity": 1.0,
+        "image_quality": 0.999
+      },
+      "region": [
+        246,
+        180,
+        1068,
+        285
+      ]
+    },
+    "name": {
+      "raw_value": "MR. ASHOK",
+      "normalized_value": "MR. ASHOK",
+      "confidence": 1.0,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Name : [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": false,
+      "candidates": [
+        "MR. ASHOK"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 1.0,
+        "proximity": 1.0,
+        "image_quality": 0.999
+      },
+      "region": [
+        279,
+        257,
+        817,
+        344
+      ]
+    },
+    "date_of_issue": {
+      "raw_value": "15/06/2021",
+      "normalized_value": "2021-06-15",
+      "confidence": 0.92,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: DOI : [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": false,
+      "candidates": [
+        "15/06/2021"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.4,
+        "proximity": 0.8,
+        "image_quality": 0.999
+      },
+      "region": [
+        1030,
+        191,
+        1318,
+        275
+      ]
+    },
+    "valid_till": {
+      "raw_value": "14/06/2041",
+      "normalized_value": "2041-06-14",
+      "confidence": 0.94,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Valid Till : [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": false,
+      "candidates": [
+        "14/06/2041"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.4,
+        "proximity": 1.0,
+        "image_quality": 0.999
+      },
+      "region": [
+        916,
+        242,
+        1373,
+        319
+      ]
+    }
+  },
+  "auxiliary_fields": {},
+  "document_review_required": false,
+  "warnings": [
+    "issue date precedes validity date"
+  ],
+  "preprocessing": [
+    {
+      "page": 1,
+      "rotation_applied": 0,
+      "skew_corrected_deg": 0.0,
+      "sharpness": 2569.5,
+      "contrast": 67.8,
+      "min_side_px": 997.0,
+      "quality_score": 0.999
+    }
+  ],
+  "threshold": 0.85
+}

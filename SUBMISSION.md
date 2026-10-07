@@ -10,16 +10,18 @@ this submission, and the separate document-aware support assistant is intentiona
 
 | Area | Status |
 |---|---|
-| Q2 inventory agent: loader, sandbox, search, agent, UI | Implemented; covered by unit tests with a mocked LLM |
-| Q2 live demo transcript (`outputs/question2/demo_transcript.md`) | **Pending: needs an LLM API key** |
-| Q3 pipeline: ingest, classify, extract, score, report, UI | Implemented; covered by unit tests with a scripted fake vision model |
-| Q3 outputs on the supplied files (`outputs/question3/`) | **Pending: needs an LLM API key** (only `methodology.md` is written) |
-| Live integration tests (4) | **Pending: needs an LLM API key** |
-| Screenshots (6) | **Pending: captured from the running app after the live runs** |
-| Automated tests (mocked) | 135 passed, 4 live tests skipped |
+| Q2 inventory agent: loader, sandbox, search, agent, UI | Implemented; unit-tested with a mocked LLM |
+| Q2 live demo transcript (`outputs/question2/demo_transcript.md`) | Done, live on the free Gemini tier, 7 Oct 2026 (11 questions) |
+| Q2 web search | Implemented (Claude, Gemini grounding, Tavily, DuckDuckGo with fallback); **not demonstrated live**: the free Gemini tier has no Google Search grounding and the build environment blocks DuckDuckGo, so the app shows "web search unavailable" |
+| Q3 pipeline: ingest, classify, extract, score, report, UI | Implemented; unit-tested with a scripted fake vision model |
+| Q3 outputs on the 12 supplied files (`outputs/question3/`) | Done, live: 12 logical documents, 0 file errors, 36 of 44 fields auto-accepted, 10 items queued for review |
+| Live integration tests (4) | 3 passed, 1 failed (web search, for the environment reason above) |
+| Screenshots (6) | Done, captured from the running app with masking on |
+| Automated tests (mocked) | 168 passed, 4 live tests skipped |
 
-Nothing in this file reports a result that was not produced. Pending rows are filled in only after the
-live runs.
+All results below come from real runs. Gemini free tier: Flash models only, 20 requests per model per day,
+so Question 3 used batched crop reads and Question 2 also fell back to Flash-Lite models (the transcript
+footer lists which model answered each call).
 
 ## Question 2 checklist: inventory conversational agent
 
@@ -30,16 +32,16 @@ live runs.
 | 3 | Normalise column names, keep the original mapping | `normalize_column_name`, `InventoryData.column_map` (shown in the UI) | `test_column_normalisation_keeps_original_mapping`, `test_normalize_column_name` |
 | 4 | Generate pandas code for analytical questions | planner call in `agent.py` (JSON schema: intent, code, search query, message) | `test_numeric_question_runs_code_and_summarises` |
 | 5 | Execute that code safely | `sandbox.py`: AST allow/deny lists, restricted builtins, separate process, timeout, CPU/memory limits, output caps, sanitised errors | 26 tests in `test_q2_sandbox.py` (imports, dunders, `eval`/`exec`/`open`, file/network methods, timeout, memory limit, truncation) |
-| 6 | Show the generated code in a collapsible section | "Generated pandas code" expander in `app.py` | screenshot 1 (pending) |
+| 6 | Show the generated code in a collapsible section | "Generated pandas code" expander in `app.py` | screenshot 1 |
 | 7 | Use web search for external definitions or business context | planner intents `search` / `data_and_search`; `search.py` (Claude web search, Gemini Google Search, Tavily, DuckDuckGo) | `test_search_question_uses_search_and_cites` |
 | 8 | Clickable source URLs | numbered `[title](url)` list appended by code, non-HTTP URLs dropped | `test_format_sources_markdown_is_clickable`, `test_safe_search_drops_non_http_sources_and_scrubs` |
 | 9 | Concise plain-English summary | summary call restricted to numbers in the execution result | `test_numeric_question_runs_code_and_summarises` |
 | 10 | Chat history within the session | `InventoryAgent.history` in `st.session_state`; last five turns go to the planner | `test_follow_up_sees_history` |
 | 11 | Follow-ups, ambiguity, unknown products, invalid requests, empty results | intents `clarify` / `out_of_scope`; empty results reported as such; failed code repaired once | `test_clarification_and_out_of_scope`, `test_unknown_product_gives_empty_result`, `test_failed_code_is_repaired_once`, `test_unsafe_generated_code_is_blocked_not_run`, `test_empty_question` |
-| 12 | Numbers, filters, ranking, comparisons, aggregation, consistency checks, charts | sandboxed pandas plus a validated chart spec (bar, horizontal bar, line, pie, scatter) rendered with Altair | `test_chart_spec_validated`; demo transcript (pending) |
+| 12 | Numbers, filters, ranking, comparisons, aggregation, consistency checks, charts | sandboxed pandas plus a validated chart spec (bar, horizontal bar, line, pie, scatter) rendered with Altair | `test_chart_spec_validated`; demo transcript question 6 (`chart_q6.png`) |
 | 13 | Separate workbook facts from web context | answer sections "From the workbook" and "External context (web)" with `[n]` citations | `test_search_question_uses_search_and_cites` |
 | – | Never "fix" the stated Hand-In-Stock | `stock_consistency` adds expected/difference columns on a copy | `test_stock_inconsistencies_reported_not_fixed` |
-| – | Reset conversation button, workbook profile, tables, charts | `app.py` Inventory page | screenshots 1–2 (pending) |
+| – | Reset conversation button, workbook profile, tables, charts | `app.py` Inventory page | screenshots 1–2 |
 | – | PII never sent to web search | `safe_search` scrubs Aadhaar/PAN/IFSC/account/phone/email patterns | `test_search_query_is_scrubbed_of_pii` |
 
 **Workbook smoke values** (all asserted by `test_workbook_smoke_totals` and
@@ -73,8 +75,8 @@ live runs.
 | – | Validators: Aadhaar Verhoeff, PAN, IFSC, DL, passport, MRZ check digits, dates, account (leading zeros), amount, checkbox | `validators.py` | 30 tests in `test_q3_validators.py` |
 | – | Validation supports confidence, never overwrites the observed value | raw value kept; failure caps confidence at 0.70 and flags | `test_validation_failure_is_preserved_and_flagged` |
 | – | Threshold 0.85, configurable | `REVIEW_THRESHOLD` | `test_threshold_behaviour`, `test_threshold_is_configurable` |
-| – | The two Ashok PDFs go to `unknown_or_other` and the review queue | classifier prompt treats other insurer forms as unsupported | live test `test_live_pdf_is_unsupported` (pending) |
-| – | UI: upload, batch status, classification summary, field results with confidence, review queue, masking, preview, downloads | `app.py` Document page | screenshots 3–6 (pending) |
+| – | The two Ashok PDFs go to `unknown_or_other` and the review queue | classifier prompt treats other insurer forms as unsupported | live test `test_live_pdf_is_unsupported` (passed); both PDFs classified `unknown_or_other` in the outputs |
+| – | UI: upload, batch status, classification summary, field results with confidence, review queue, masking, preview, downloads | `app.py` Document page | screenshots 3–6 |
 
 ## Commands
 
@@ -94,46 +96,96 @@ python scripts/capture_screenshots.py                     # Playwright screensho
 
 ## Test results
 
-Run on 6 Oct 2026 in a Linux container (Python 3.13.16, Tesseract 5.3.4):
+Run on 7 Oct 2026 in a Linux container (Python 3.13.16, Tesseract 5.3.4):
 
 ```
 $ python -m pytest -rs
-135 passed, 4 skipped in 51s
+166 passed, 4 skipped
 SKIPPED [4] tests/test_integration_live.py: set RUN_LIVE_TESTS=1 and an LLM API key to run live integration tests
 
-$ ruff check .
+$ ruff check . && ruff format --check .
 All checks passed!
 ```
+
+Live integration tests (`RUN_LIVE_TESTS=1`, free Gemini key, 7 Oct 2026):
+
+```
+PASSED test_live_inventory_count
+PASSED test_live_pdf_is_unsupported
+PASSED test_live_sample_images_cover_the_ten_types_with_scored_fields
+FAILED test_live_search_question_cites_clickable_sources
+  search provider llm failed: Gemini API error (HTTP 429 ...)       # free tier: no Google Search grounding
+  search provider duckduckgo failed: DuckDuckGo search failed       # blocked by the build environment's network
+```
+
+The search test is expected to pass with a Claude or paid Gemini key, a Tavily key, or DuckDuckGo on an
+ordinary internet connection.
 
 | Test module | Tests | Covers |
 |---|---|---|
 | `test_q2_loader.py` | 10 | header detection, column normalisation, smoke totals, inconsistencies |
 | `test_q2_sandbox.py` | 26 | blocked constructs, allowed analytics, timeout, memory limit, sanitised errors, truncation, chart specs |
-| `test_q2_agent.py` | 10 | code generation and repair, unsafe code, search and citations, clarification, unknown product, follow-ups |
-| `test_q2_search.py` | 5 | clickable source formatting, PII scrubbing, provider selection |
+| `test_q2_agent.py` | 11 | code generation and repair, unsafe code, search and citations, unsourced search text, clarification, unknown product, follow-ups |
+| `test_q2_search.py` | 8 | clickable source formatting, PII scrubbing, provider selection, search fallback |
 | `test_q3_validators.py` | 30 | Aadhaar/Verhoeff, PAN, IFSC, account, amount, dates, DL, passport, MRZ, checkbox, confusables |
 | `test_q3_confidence.py` | 11 | weights, caps, missing = 0, threshold behaviour, determinism |
 | `test_q3_imaging.py` | 7 | PNG/JPEG/RGBA/PDF ingestion, corrupt files, orientation, originals untouched, crops |
-| `test_q3_pipeline.py` | 22 | every schema, missing fields, disagreement, unsupported PDF, page grouping, JSON and reports |
+| `test_q3_pipeline.py` | 26 | every schema, missing fields, disagreement, unsupported PDF, page grouping, batched crop reads, failed passes, box order, JSON and reports |
 | `test_privacy_config.py` | 8 | masking, PII scrubbing, settings and setup hints |
-| `test_llm_providers.py` | 6 | structured-output requests, refusals, truncation, web-search citations, cache |
+| `test_llm_providers.py` | 29 | structured-output requests, refusals, truncation, web-search citations, cache, Gemini retries, quotas, fallbacks, per-model temperature, key redaction, model attribution |
 | `test_integration_live.py` | 4 | live: inventory count, search citations, ten-type coverage of the sample images, Ashok PDF unsupported |
 
 ## Sample-processing results
 
-Pending the live runs. They will be summarised here from `outputs/question2/demo_transcript.md` and
-`outputs/question3/extraction_summary.csv`.
+**Question 2** (`outputs/question2/demo_transcript.md`, one continuous session):
+
+| # | Question | Result |
+|---|---|---|
+| 1 | How many products are in the inventory? | 46 (`df["product_id"].nunique()`) |
+| 2 | Five products with the highest stock | Smartphone 80, then four more, with code and table |
+| 3 | Total current inventory value | USD 359,760 |
+| 4 | Stock-calculation inconsistencies | the 12 rows, reported and not altered |
+| 5 | Fewer than 30 units in stock | filtered table |
+| 6 | Chart of the ten most valuable products | bar chart (`chart_q6.png`) |
+| 7 | Inventory turnover meaning and feasibility | workbook part answered; web search unavailable (see above) |
+| 8 | Follow-up: lowest stock among those ten | Gaming Monitor, 29 units (uses chat history) |
+| 9 | Hoverboards (unknown product) | "nothing matched", no invented number |
+| 10 | "Which is the best one?" (ambiguous) | asks which metric to use |
+| 11 | Delete the workbook / show environment variables | refused as out of scope |
+
+**Question 3** (`outputs/question3/extraction_summary.csv`):
+
+| File | Pages | Predicted type | Type conf. | Fields auto-accepted | For review |
+|---|---|---|---|---|---|
+| `Aadhar.png` | 1 | `aadhaar_card` | 0.99 | 3/4 | 1 |
+| `Assignment Ashok.pdf` | 1,2 | `unknown_or_other` | 0.79 | – | document |
+| `ChatGPT Image … 03_43_11 PM.png` | 1 | `driving_licence` | 0.99 | 4/4 | 0 |
+| `ChatGPT Image … 03_52_54 PM.png` | 1 | `passport` | 0.99 | 3/4 | 1 |
+| `ECS.jpeg` | 1 | `nach_ecs_mandate` | 0.99 | 4/5 | 1 |
+| `Fatca.jpeg` | 1 | `fatca_annexure` | 1.00 | 4/5 | 1 |
+| `ID.png` | 1 | `pan_card` | 1.00 | 3/4 | 1 |
+| `Illustration.jpeg` | 1 | `benefit_illustration_declaration` | 1.00 | 3/4 | 1 |
+| `Moral.jpeg` | 1 | `moral_hazard_questionnaire` | 1.00 | 4/5 | 1 |
+| `Proposal Ashok.pdf` | 1,2 | `unknown_or_other` | 0.60 | – | document |
+| `split.jpeg` | 1 | `multiple_policies_consent` | 0.99 | 4/4 | 0 |
+| `suitability.jpeg` | 1 | `suitability_profiler_declaration` | 1.00 | 4/5 | 1 |
+
+All ten supported types were found, each multi-page PDF stayed one logical document, and 10 items went to
+the review queue: three validator failures on what look like sample numbers (Aadhaar, PAN, passport MRZ),
+three handwritten dates whose reads disagree or are ambiguous (Illustration, Moral, suitability), an IFSC
+code with `1`/`I` ambiguity, a policy number at 0.80, and the two unsupported PDFs. Details and causes are
+in `outputs/question3/failure_cases.md`.
 
 ## Screenshot index
 
 | # | File | Shows |
 |---|---|---|
-| 1 | `screenshots/01_inventory_numeric_code.png` | numerical answer with the generated pandas code (pending) |
-| 2 | `screenshots/02_inventory_web_search.png` | web-search answer with clickable citations, separated from workbook facts (pending) |
-| 3 | `screenshots/03_documents_classification.png` | batch classification summary (pending) |
-| 4 | `screenshots/04_handwritten_fields.png` | handwritten-field extraction with confidence scores (pending) |
-| 5 | `screenshots/05_review_queue.png` | human-review queue with low-confidence and unsupported items (pending) |
-| 6 | `screenshots/06_downloads.png` | JSON and report downloads with a masked JSON preview (pending) |
+| 1 | `screenshots/01_inventory_numeric_code.png` | numerical answer with the generated pandas code |
+| 2 | `screenshots/02_inventory_web_search.png` | web-search question: workbook facts plus the honest "web search unavailable" notice (no citations could be produced here) |
+| 3 | `screenshots/03_documents_classification.png` | batch classification summary |
+| 4 | `screenshots/04_handwritten_fields.png` | handwritten-field extraction with confidence scores |
+| 5 | `screenshots/05_review_queue.png` | human-review queue with low-confidence and unsupported items |
+| 6 | `screenshots/06_downloads.png` | JSON and report downloads with a masked JSON preview |
 
 Screenshots are taken with masking on (the default), so identity and financial numbers appear as `••••1234`.
 
@@ -167,10 +219,11 @@ git push -u origin main
 - [x] `outputs/question3/methodology.md`
 - [x] README with scope, numbering note, setup for Windows/macOS/Linux, environment variables, methodology, privacy, limitations, troubleshooting
 - [x] `.env.example`; `.gitignore` excludes `.env`, keys, caches, crops and logs
-- [ ] Live Q2 demo transcript
-- [ ] Live Q3 outputs: per-document JSON, `all_results.json`, flagging report (CSV and JSON), extraction summary
-- [ ] `outputs/question3/failure_cases.md` completed with live observations
-- [ ] Live integration tests run
-- [ ] Six screenshots captured from the running app
-- [ ] Secret scan and local commit
+- [x] Live Q2 demo transcript
+- [x] Live Q3 outputs: per-document JSON, `all_results.json`, flagging report (CSV and JSON), extraction summary
+- [x] `outputs/question3/failure_cases.md` completed with live observations
+- [x] Live integration tests run (3 passed, 1 failed for the environment reason above)
+- [x] Six screenshots captured from the running app
+- [x] Secret scan and local commit
+- [ ] Live web search with citations (needs a key or network that allows search; see Status)
 - [ ] Repository pushed (private) and the link above filled in

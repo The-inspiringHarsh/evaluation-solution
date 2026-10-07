@@ -1,0 +1,168 @@
+{
+  "document_id": "e69dc7f300-p1",
+  "source_file": "ID.png",
+  "pages": [
+    1
+  ],
+  "classification": {
+    "document_type": "pan_card",
+    "confidence": 1.0,
+    "review_required": false,
+    "evidence": "Permanent Account Number Card",
+    "model_confidence": 1.0,
+    "keyword_vote": "pan_card"
+  },
+  "fields": {
+    "pan_number": {
+      "raw_value": "ABCDE1234F",
+      "normalized_value": "ABCDE1234F",
+      "confidence": 0.7,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Permanent Account Number Card [model value box adjacent to OCR-located label]",
+      "review_required": true,
+      "review_reasons": [
+        "confidence 0.70 below threshold 0.85",
+        "validation: 4th character 'D' is not a valid PAN holder-type code",
+        "format/checksum validation failed -> capped at 0.7"
+      ],
+      "handwritten": false,
+      "candidates": [
+        "ABCDE1234F"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 0.0,
+        "legibility": 1.0,
+        "ocr": 1.0,
+        "proximity": 1.0,
+        "image_quality": 0.955
+      },
+      "region": [
+        389,
+        256,
+        1115,
+        541
+      ]
+    },
+    "full_name": {
+      "raw_value": "MR. ASHOK",
+      "normalized_value": "MR. ASHOK",
+      "confidence": 0.976,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: नाम / Name [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": false,
+      "candidates": [
+        "MR. ASHOK"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 1.0,
+        "proximity": 0.8,
+        "image_quality": 0.955
+      },
+      "region": [
+        0,
+        550,
+        458,
+        670
+      ]
+    },
+    "fathers_name": {
+      "raw_value": "S/O KUMAR",
+      "normalized_value": "S/O KUMAR",
+      "confidence": 0.996,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: पिता का नाम / Father's Name [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": false,
+      "candidates": [
+        "S/O KUMAR"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 1.0,
+        "proximity": 1.0,
+        "image_quality": 0.955
+      },
+      "region": [
+        0,
+        613,
+        647,
+        829
+      ]
+    },
+    "date_of_birth": {
+      "raw_value": "18/12/1979",
+      "normalized_value": "1979-12-18",
+      "confidence": 0.936,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: जन्म की तारीख / Date of Birth [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": false,
+      "candidates": [
+        "18/12/1979"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.4,
+        "proximity": 1.0,
+        "image_quality": 0.955
+      },
+      "region": [
+        0,
+        741,
+        642,
+        979
+      ]
+    }
+  },
+  "auxiliary_fields": {},
+  "document_review_required": true,
+  "warnings": [],
+  "preprocessing": [
+    {
+      "page": 1,
+      "rotation_applied": 0,
+      "skew_corrected_deg": 0.0,
+      "sharpness": 1330.5,
+      "contrast": 51.2,
+      "min_side_px": 995.0,
+      "quality_score": 0.955
+    }
+  ],
+  "threshold": 0.85
+}

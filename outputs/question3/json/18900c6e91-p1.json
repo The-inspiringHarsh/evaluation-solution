@@ -1,0 +1,243 @@
+{
+  "document_id": "18900c6e91-p1",
+  "source_file": "ECS.jpeg",
+  "pages": [
+    1
+  ],
+  "classification": {
+    "document_type": "nach_ecs_mandate",
+    "confidence": 0.994,
+    "review_required": false,
+    "evidence": "NACH MANDATE INSTRUCTION",
+    "model_confidence": 0.99,
+    "keyword_vote": "nach_ecs_mandate"
+  },
+  "fields": {
+    "bank_account_number": {
+      "raw_value": "31004258912",
+      "normalized_value": "31004258912",
+      "confidence": 0.926,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: Bank a/c number 31004258912 [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "31004258912"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.0,
+        "proximity": 0.8,
+        "image_quality": 1.0
+      },
+      "region": [
+        46,
+        155,
+        557,
+        271
+      ]
+    },
+    "ifsc_code": {
+      "raw_value": "SBIN0227112",
+      "normalized_value": "SBIN0227112",
+      "confidence": 0.747,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: IFSC SB1N0227112 [model value box (label not confirmed by OCR)]",
+      "review_required": true,
+      "review_reasons": [
+        "confidence 0.75 below threshold 0.85",
+        "ambiguous characters reported: I or 1 at position 3; 1 or I at position 9; 1 or I at position 10",
+        "label proximity not fully confirmed (model value box (label not confirmed by OCR))"
+      ],
+      "handwritten": true,
+      "candidates": [
+        "SBIN0022712",
+        "SBIN0227112"
+      ],
+      "confidence_components": {
+        "agreement": 0.667,
+        "validation": 1.0,
+        "legibility": 0.55,
+        "ocr": 0.273,
+        "proximity": 0.8,
+        "image_quality": 1.0
+      },
+      "region": [
+        452,
+        190,
+        875,
+        294
+      ]
+    },
+    "bank_name": {
+      "raw_value": "State Bank of India",
+      "normalized_value": "State Bank of India",
+      "confidence": 0.967,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract"
+      ],
+      "evidence": "p1: with bank State Bank of India [model value box adjacent to OCR-located label]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "State Bank of India"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": null,
+        "legibility": 1.0,
+        "ocr": 0.5,
+        "proximity": 1.0,
+        "image_quality": 1.0
+      },
+      "region": [
+        0,
+        195,
+        555,
+        303
+      ]
+    },
+    "amount_in_figures": {
+      "raw_value": "50,000",
+      "normalized_value": "50000",
+      "confidence": 0.945,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: ₹ 50,000 [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "50,000"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 0.85,
+        "ocr": 0.8,
+        "proximity": 0.8,
+        "image_quality": 1.0
+      },
+      "region": [
+        805,
+        211,
+        1147,
+        337
+      ]
+    },
+    "frequency": {
+      "raw_value": "As & when presented",
+      "normalized_value": "As & when presented",
+      "confidence": 0.966,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract",
+        "validator"
+      ],
+      "evidence": "p1: As & when presented [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "As & when presented"
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": 1.0,
+        "legibility": 1.0,
+        "ocr": 0.75,
+        "proximity": 0.8,
+        "image_quality": 1.0
+      },
+      "region": [
+        417,
+        254,
+        665,
+        362
+      ]
+    }
+  },
+  "auxiliary_fields": {
+    "amount_in_words": {
+      "raw_value": "Fifty thousand only.",
+      "normalized_value": "Fifty thousand only",
+      "confidence": 0.954,
+      "page": 1,
+      "method": [
+        "vision_full_page",
+        "vision_crop",
+        "vision_crop_binarized",
+        "ocr_tesseract"
+      ],
+      "evidence": "p1: ees Fifty thousand only. [model value box (label not confirmed by OCR)]",
+      "review_required": false,
+      "review_reasons": [],
+      "handwritten": true,
+      "candidates": [
+        "Fifty thousand only",
+        "Fifty thousand only."
+      ],
+      "confidence_components": {
+        "agreement": 1.0,
+        "validation": null,
+        "legibility": 1.0,
+        "ocr": 0.706,
+        "proximity": 0.8,
+        "image_quality": 1.0
+      },
+      "region": [
+        126,
+        212,
+        657,
+        356
+      ]
+    }
+  },
+  "document_review_required": true,
+  "warnings": [
+    "amount in figures matches amount in words"
+  ],
+  "preprocessing": [
+    {
+      "page": 1,
+      "rotation_applied": 0,
+      "skew_corrected_deg": 0.0,
+      "sharpness": 10203.2,
+      "contrast": 62.6,
+      "min_side_px": 1147.0,
+      "quality_score": 1.0
+    }
+  ],
+  "threshold": 0.85
+}

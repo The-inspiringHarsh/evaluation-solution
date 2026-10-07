@@ -1,0 +1,13 @@
+document_id,source_file,pages,document_type,classification_confidence,fields_total,fields_auto_accepted,fields_for_review,fields_missing,mean_field_confidence,document_review_required
+97c45b128a-p1,Aadhar.png,1,aadhaar_card,0.994,4,3,1,0,0.902,True
+6f02efd0d1-p1-2,Assignment Ashok.pdf,"1,2",unknown_or_other,0.794,0,0,0,0,,True
+59148fc4fc-p1,"ChatGPT Image May 2, 2026, 03_43_11 PM.png",1,driving_licence,0.994,4,4,0,0,0.965,False
+22ea903056-p1,"ChatGPT Image May 2, 2026, 03_52_54 PM.png",1,passport,0.994,4,3,1,0,0.887,True
+18900c6e91-p1,ECS.jpeg,1,nach_ecs_mandate,0.994,5,4,1,0,0.91,True
+fc98ff2ebe-p1,Fatca.jpeg,1,fatca_annexure,1.0,5,4,1,0,0.93,True
+e69dc7f300-p1,ID.png,1,pan_card,1.0,4,3,1,0,0.902,True
+c23b514209-p1,Illustration.jpeg,1,benefit_illustration_declaration,1.0,4,3,1,0,0.793,True
+6f40a695d2-p1,Moral.jpeg,1,moral_hazard_questionnaire,1.0,5,4,1,0,0.826,True
+9e6f275cfb-p1-2,Proposal Ashok.pdf,"1,2",unknown_or_other,0.6,0,0,0,0,,True
+342dc55090-p1,split.jpeg,1,multiple_policies_consent,0.994,4,4,0,0,0.971,False
+5c26b806d5-p1,suitability.jpeg,1,suitability_profiler_declaration,1.0,5,4,1,0,0.901,True

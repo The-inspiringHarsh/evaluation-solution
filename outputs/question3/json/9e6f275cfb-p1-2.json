@@ -1,0 +1,45 @@
+{
+  "document_id": "9e6f275cfb-p1-2",
+  "source_file": "Proposal Ashok.pdf",
+  "pages": [
+    1,
+    2
+  ],
+  "classification": {
+    "document_type": "unknown_or_other",
+    "confidence": 0.6,
+    "review_required": true,
+    "evidence": "Customer Declaration - Application/Proposal Form",
+    "model_confidence": 1.0,
+    "keyword_vote": "nach_ecs_mandate"
+  },
+  "fields": {},
+  "auxiliary_fields": {},
+  "document_review_required": true,
+  "warnings": [
+    "OCR keyword classifier suggests 'nach_ecs_mandate' but the vision model says 'unknown_or_other'",
+    "document type is not one of the ten supported types",
+    "unsupported document: no fields extracted; routed to the human-review queue"
+  ],
+  "preprocessing": [
+    {
+      "page": 1,
+      "rotation_applied": 0,
+      "skew_corrected_deg": 1.52,
+      "sharpness": 2008.6,
+      "contrast": 64.1,
+      "min_side_px": 1653.0,
+      "quality_score": 1.0
+    },
+    {
+      "page": 2,
+      "rotation_applied": 0,
+      "skew_corrected_deg": 1.97,
+      "sharpness": 1224.3,
+      "contrast": 54.5,
+      "min_side_px": 1653.0,
+      "quality_score": 0.972
+    }
+  ],
+  "threshold": 0.85
+}
