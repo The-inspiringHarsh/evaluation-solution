@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from src.common.config import get_settings  # noqa: E402
-from src.common.llm import LLMNotConfigured, get_cached_llm_client  # noqa: E402
+from src.common.llm import LLMNotConfigured, UsageTracker, get_cached_llm_client  # noqa: E402
 from src.question3_documents.pipeline import process_files  # noqa: E402
 from src.question3_documents.report import summary_rows, write_outputs  # noqa: E402
 
@@ -33,7 +33,7 @@ def main() -> int:
 
     settings = get_settings()
     try:
-        llm = get_cached_llm_client(settings)
+        llm = UsageTracker(get_cached_llm_client(settings))
     except LLMNotConfigured as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
@@ -59,16 +59,18 @@ def main() -> int:
         "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "provider": settings.llm_provider,
         "model": settings.llm_model,
-        "fallback_models": list(settings.llm_fallback_models),
+        "fallback_models": list(settings.llm_fallback_models) if settings.llm_provider == "gemini" else [],
         "crop_reads": settings.crop_reads,
-        "live_calls_by_model": getattr(llm, "calls_by_model", {}),
-        "cached_responses_reused": getattr(llm, "cache_hits", 0),
+        **llm.summary(),
         "files": len(files),
         "duration_seconds": round(time.time() - start),
     }
     paths = write_outputs(batch.documents, args.out, settings.review_threshold, batch.file_errors, run_info)
     print(f"Done in {time.time() - start:.0f}s: {len(batch.documents)} logical documents, {len(batch.file_errors)} file errors")
-    print(f"  live calls by model: {run_info['live_calls_by_model']}; cached responses reused: {run_info['cached_responses_reused']}")
+    print(
+        f"  live calls by model: {run_info['live_calls_by_model']}; cached responses by model: "
+        f"{run_info['cached_responses_by_model']}; failed calls: {run_info['failed_calls']}"
+    )
     for row in summary_rows(batch.documents):
         print(
             f"  {row['source_file'][:45]:45} p{row['pages']:5} {row['document_type']:34} cls={row['classification_confidence']:.2f} "

@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT))
 import pandas as pd  # noqa: E402
 
 from src.common.config import get_settings  # noqa: E402
-from src.common.llm import LLMNotConfigured, get_llm_client  # noqa: E402
+from src.common.llm import LLMNotConfigured, UsageTracker, get_llm_client  # noqa: E402
 from src.question2_inventory.agent import InventoryAgent, render_result_text  # noqa: E402
 from src.question2_inventory.loader import load_inventory, profile  # noqa: E402
 from src.question2_inventory.search import SearchError, build_search_provider  # noqa: E402
@@ -65,7 +65,7 @@ def save_chart(chart: dict, path: Path) -> None:
 def main() -> int:
     settings = get_settings()
     try:
-        llm = get_llm_client(settings)
+        llm = UsageTracker(get_llm_client(settings))
     except LLMNotConfigured as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
@@ -118,7 +118,14 @@ def main() -> int:
             lines += [f"*Search answered by:* `{turn.search.provider}` ({len(turn.search.sources)} sources)", ""]
         if turn.search_error:
             lines += [f"Search error: {turn.search_error}", ""]
-    lines += ["---", "", f"Live LLM calls by model in this session: `{getattr(llm, 'calls_by_model', {})}`.", ""]
+    usage = llm.summary()
+    lines += [
+        "---",
+        "",
+        f"LLM calls in this session (planner, summaries and web search): answered by model "
+        f"`{usage['live_calls_by_model']}`, failed `{usage['failed_calls']}`.",
+        "",
+    ]
     (out_dir / "demo_transcript.md").write_text("\n".join(lines), encoding="utf-8")
     print(f"wrote {out_dir / 'demo_transcript.md'}")
     return 0

@@ -73,6 +73,17 @@ def test_search_question_uses_search_and_cites(inventory, fake_llm_factory):
     assert "Sources (web)" in turn.answer
 
 
+def test_search_answer_without_sources_is_not_used_as_web_context(inventory, fake_llm_factory):
+    from src.common.llm import SearchAnswer
+
+    llm = fake_llm_factory(_planner([{"intent": "search", "code": None, "search_query": "inventory turnover", "message": None}]))
+    llm.web_search = lambda query, max_uses=3: SearchAnswer(query=query, answer="Unsourced claim from memory.", sources=[], provider="fake")
+    turn = InventoryAgent(inventory, llm, LLMNativeSearch(llm)).ask("What is inventory turnover?")
+    prompt = llm.text_calls[-1]["messages"][0]["content"]
+    assert "Unsourced claim" not in prompt and "could not be verified" in prompt
+    assert "Sources (web)" not in turn.answer
+
+
 def test_search_query_is_scrubbed_of_pii(inventory, fake_llm_factory):
     llm = fake_llm_factory(_planner([{"intent": "search", "code": None, "search_query": "PAN ABCDE1234F meaning", "message": None}]))
     InventoryAgent(inventory, llm, LLMNativeSearch(llm)).ask("what is this PAN")

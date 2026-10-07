@@ -191,9 +191,12 @@ class InventoryAgent:
                 parts.append(f"Execution failed: {turn.execution.error}. Tell the user the query could not be computed.")
         elif turn.intent in {"data", "data_and_search"}:
             parts.append("No code could be produced. Say the question could not be answered from the workbook.")
-        if turn.search is not None:
+        if turn.search is not None and turn.search.sources:
             numbered = "\n".join(f"[{i}] {s.title} - {s.url}\n    {s.snippet}" for i, s in enumerate(turn.search.sources[:6], start=1))
             parts.append(f"Web search answer (external):\n{turn.search.answer or '(none)'}\nSources:\n{numbered}")
+        elif turn.search is not None:
+            # Text without sources may be the model's own memory, so it is not passed on as web context.
+            parts.append("Web search returned no sources. Say external context could not be verified; state no external facts.")
         elif turn.search_error:
             parts.append(f"Web search failed: {turn.search_error}. Say external context is unavailable.")
         summary = self.llm.complete_text(system=SUMMARY_SYSTEM, messages=[{"role": "user", "content": "\n\n".join(parts)}], max_tokens=2000)

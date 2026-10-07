@@ -97,6 +97,29 @@ def _parse_json_text(text: str) -> dict[str, Any]:
     return value
 
 
+class _LastCall:
+    """Per-thread record of which model answered this thread's latest call and whether it came from a cache.
+
+    Calls run in worker threads and the Streamlit client is shared, so a per-thread value is the only way to
+    attribute a response to the model that produced it without changing the provider interface.
+    """
+
+    def __init__(self) -> None:
+        self._local = threading.local()
+
+    def set(self, model: str | None, cached: bool = False) -> None:
+        self._local.value = (model, cached)
+
+    def get(self) -> tuple[str | None, bool]:
+        return getattr(self._local, "value", (None, False))
+
+
+def _last_call(client: Any) -> tuple[str | None, bool]:
+    """``(model, from_cache)`` for the calling thread's latest successful call on ``client``."""
+    value = getattr(client, "last_call", None)
+    return value if isinstance(value, tuple) else (None, False)
+
+
 # --------------------------------------------------------------------------- Anthropic
 
 
@@ -118,9 +141,15 @@ class AnthropicClient:
         self._use_fallbacks = os.getenv("LLM_FALLBACKS", "default").strip().lower() != "off"
         self._stats_lock = threading.Lock()
         self.calls_by_model: dict[str, int] = {}
+        self._last = _LastCall()
+
+    @property
+    def last_call(self) -> tuple[str | None, bool]:
+        return self._last.get()
 
     def _create(self, **kwargs: Any) -> Any:
         anthropic = self._anthropic
+        self._last.set(None)
         kwargs.setdefault("model", self.model)
         kwargs.setdefault("output_config", {})
         kwargs["output_config"].setdefault("effort", self.effort)
@@ -143,6 +172,7 @@ class AnthropicClient:
         served_by = served_by if isinstance(served_by, str) and served_by else kwargs["model"]
         with self._stats_lock:
             self.calls_by_model[served_by] = self.calls_by_model.get(served_by, 0) + 1
+        self._last.set(served_by)
         if msg.stop_reason == "refusal":
             raise LLMError("The model declined this request.")
         return msg
@@ -262,23 +292,35 @@ class _GeminiError:
 
 
 def _gemini_error(resp: Any, key: str = "") -> _GeminiError:
-    """Pull the first line of the API message, ``RetryInfo.retryDelay`` and whether a per-day quota was hit."""
+    """Pull the first line of the API message, ``RetryInfo.retryDelay`` and whether a per-day quota was hit.
+
+    Tolerates bodies that do not follow Google's error shape (e.g. from a proxy): anything unexpected
+    simply leaves the defaults, so the caller still raises a normal :class:`LLMError`.
+    """
     info = _GeminiError(resp.status_code)
     try:
-        err = resp.json().get("error", {})
-    except (ValueError, AttributeError):
+        body = resp.json()
+    except ValueError:
         return info
-    message = str(err.get("message") or "").strip()
+    err = body.get("error") if isinstance(body, dict) else None
+    if not isinstance(err, dict):
+        return info
+    message = str(err.get("message") or "")
+    if key:
+        message = message.replace(key, "<key>")  # before truncating, so a key at the cut is never half-kept
+    message = message.strip()
     if message:
         info.message = message.splitlines()[0][:200]
-        if key:
-            info.message = info.message.replace(key, "<key>")
-    for detail in err.get("details") or []:
+    details = err.get("details")
+    for detail in details if isinstance(details, list) else []:
+        if not isinstance(detail, dict):
+            continue
         kind = str(detail.get("@type", ""))
         if kind.endswith("RetryInfo"):
             info.retry_after = _duration_seconds(str(detail.get("retryDelay", "")))
         elif kind.endswith("QuotaFailure"):
-            violations = detail.get("violations") or []
+            raw = detail.get("violations")
+            violations = [v for v in raw if isinstance(v, dict)] if isinstance(raw, list) else []
             info.daily_quota = any("PerDay" in str(v.get("quotaId", "")) for v in violations)
             limits = [f"{v.get('quotaId')} limit {v.get('quotaValue', '?')}" for v in violations if v.get("quotaId")]
             if limits:
@@ -324,8 +366,8 @@ class GeminiClient:
     Transient failures (HTTP 429 per-minute quota, 5xx "high demand", network errors) are retried with
     exponential backoff, honouring the server's ``retryDelay``. ``max_rpm`` paces requests per model so
     free-tier per-minute limits are not hit in the first place. ``fallback_models`` are tried in order when
-    a model is overloaded, unavailable or out of daily quota; :attr:`calls_by_model` records which model
-    answered each call so outputs can report it.
+    a model is overloaded, unavailable or out of daily quota; :attr:`last_call` names the model that answered
+    (see :class:`UsageTracker`) and :attr:`calls_by_model` totals live calls per model for this client.
     """
 
     provider = "gemini"
@@ -343,29 +385,51 @@ class GeminiClient:
         self._sleep = time.sleep
         self._stats_lock = threading.Lock()
         self.calls_by_model: dict[str, int] = {}
+        self._last = _LastCall()
+
+    @property
+    def last_call(self) -> tuple[str | None, bool]:
+        return self._last.get()
 
     @staticmethod
     def _backoff(attempt: int) -> float:
         return min(60.0, 2.0 * 2**attempt) * (0.75 + random.random() / 2)
 
-    def _post(self, body: dict[str, Any], retries: int | None = None, fallbacks: bool = True) -> dict[str, Any]:
+    @staticmethod
+    def _body_for(model: str, body: dict[str, Any], temperature: float | None) -> dict[str, Any]:
+        # Gemini 3+ is tuned for the default temperature (lower values can cause looping), so only older
+        # models get a fixed one. Decided per model because fallbacks may be a different generation.
+        if temperature is None or (_gemini_major_version(model) or 3) >= 3:
+            return body
+        return {**body, "generationConfig": {**body.get("generationConfig", {}), "temperature": temperature}}
+
+    def _post(
+        self, body: dict[str, Any], retries: int | None = None, fallbacks: bool = True, temperature: float | None = None
+    ) -> dict[str, Any]:
         problem = "Gemini API error."
+        self._last.set(None)
         max_retries = self._max_retries if retries is None else min(retries, self._max_retries)
         models = self._models if fallbacks else self._models[:1]
         for model in models:
             url = f"{self._BASE}/{model}:generateContent"
+            model_body = self._body_for(model, body, temperature)
             for attempt in range(max_retries + 1):
                 _pacer_for(model, self._rpm).wait(self._sleep)
                 try:
-                    resp = self._httpx.post(url, json=body, headers={"x-goog-api-key": self._key}, timeout=300.0)
+                    resp = self._httpx.post(url, json=model_body, headers={"x-goog-api-key": self._key}, timeout=300.0)
                 except self._httpx.HTTPError:
                     problem = "Could not reach the Gemini API (network error)."
                     delay = self._backoff(attempt)
                 else:
                     if resp.status_code == 200:
+                        try:
+                            data = resp.json()
+                        except ValueError as exc:
+                            raise LLMError("Gemini returned a response that is not JSON.") from exc
                         with self._stats_lock:
                             self.calls_by_model[model] = self.calls_by_model.get(model, 0) + 1
-                        return resp.json()
+                        self._last.set(model)
+                        return data
                     err = _gemini_error(resp, self._key)
                     problem = f"Gemini API error (HTTP {err.status}" + (f": {err.message}" if err.message else "") + ")."
                     if err.status == 404 or (err.status == 429 and err.daily_quota):
@@ -407,35 +471,26 @@ class GeminiClient:
             raise LLMError(f"Gemini returned no text (finish reason {reason}).")
         return text
 
-    def _generation_config(self, **config: Any) -> dict[str, Any]:
-        # Gemini 3+ is tuned for the default temperature (lower values can cause looping), so only
-        # older models get a fixed temperature.
-        temperature = config.pop("temperature")
-        if (_gemini_major_version(self.model) or 3) < 3:
-            config["temperature"] = temperature
-        return config
-
     def complete_json(self, *, system: str, parts: Sequence[Part], schema: dict[str, Any], max_tokens: int = 4000) -> dict[str, Any]:
         body = {
             "system_instruction": {"parts": [{"text": system}]},
             "contents": [{"role": "user", "parts": self._parts(parts)}],
-            "generationConfig": self._generation_config(
-                responseMimeType="application/json",
-                responseSchema=_schema_for_gemini(schema),
-                maxOutputTokens=max(max_tokens, 16000),  # thinking tokens count against this limit
-                temperature=0,
-            ),
+            "generationConfig": {
+                "responseMimeType": "application/json",
+                "responseSchema": _schema_for_gemini(schema),
+                "maxOutputTokens": max(max_tokens, 16000),  # thinking tokens count against this limit
+            },
         }
-        return _parse_json_text(self._text(self._post(body)))
+        return _parse_json_text(self._text(self._post(body, temperature=0)))
 
     def complete_text(self, *, system: str, messages: Sequence[dict[str, str]], max_tokens: int = 2000) -> str:
         contents = [{"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]} for m in messages]
         body = {
             "system_instruction": {"parts": [{"text": system}]},
             "contents": contents,
-            "generationConfig": self._generation_config(maxOutputTokens=max(max_tokens, 8000), temperature=0.2),
+            "generationConfig": {"maxOutputTokens": max(max_tokens, 8000)},
         }
-        return self._text(self._post(body)).strip()
+        return self._text(self._post(body, temperature=0.2)).strip()
 
     def web_search(self, query: str, *, max_uses: int = 3) -> SearchAnswer:
         body = {
@@ -470,15 +525,29 @@ class OpenAIClient:
         self._httpx = httpx
         self.model = model
         self._key = os.environ.get("OPENAI_API_KEY", "")
+        self._stats_lock = threading.Lock()
+        self.calls_by_model: dict[str, int] = {}
+        self._last = _LastCall()
+
+    @property
+    def last_call(self) -> tuple[str | None, bool]:
+        return self._last.get()
 
     def _post(self, body: dict[str, Any]) -> dict[str, Any]:
+        self._last.set(None)
         try:
             resp = self._httpx.post(self._URL, json=body, headers={"Authorization": f"Bearer {self._key}"}, timeout=300.0)
         except self._httpx.HTTPError as exc:
             raise LLMError("Could not reach the OpenAI API (network error).") from exc
         if resp.status_code != 200:
             raise LLMError(f"OpenAI API error (HTTP {resp.status_code}).")
-        return resp.json()
+        data = resp.json()
+        served_by = data.get("model") if isinstance(data, dict) else None
+        served_by = served_by if isinstance(served_by, str) and served_by else self.model
+        with self._stats_lock:
+            self.calls_by_model[served_by] = self.calls_by_model.get(served_by, 0) + 1
+        self._last.set(served_by)
+        return data
 
     def complete_json(self, *, system: str, parts: Sequence[Part], schema: dict[str, Any], max_tokens: int = 4000) -> dict[str, Any]:
         content: list[dict[str, Any]] = []
@@ -532,9 +601,15 @@ def get_llm_client(settings: Settings) -> LLMClient:
 # --------------------------------------------------------------------------- response cache
 
 
+_CACHE_FORMAT = 2
+MODEL_NOT_RECORDED = "model not recorded"
+
+
 class CachedLLM:
     """Disk cache for ``complete_json`` so re-runs (tests, UI demos) do not re-bill identical requests.
 
+    Each entry stores the model that answered (a fallback model may answer under the main model's key), so
+    reused responses stay attributable. Entries written before that was recorded replay with no model.
     The cache holds extracted values, so it lives under ``.cache/`` which is git-ignored.
     """
 
@@ -548,7 +623,11 @@ class CachedLLM:
         self._hash = hashlib.sha256
         self.provider = inner.provider
         self.model = inner.model
-        self.cache_hits = 0
+        self._last = _LastCall()
+
+    @property
+    def last_call(self) -> tuple[str | None, bool]:
+        return self._last.get()
 
     def _key(self, system: str, parts: Sequence[Part], schema: dict[str, Any]) -> str:
         h = self._hash()
@@ -562,22 +641,77 @@ class CachedLLM:
     def complete_json(self, *, system: str, parts: Sequence[Part], schema: dict[str, Any], max_tokens: int = 4000) -> dict[str, Any]:
         path = self._dir / f"{self._key(system, parts, schema)}.json"
         if path.exists():
-            self.cache_hits += 1
-            return json.loads(path.read_text(encoding="utf-8"))
+            stored = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(stored, dict) and stored.get("_cache_format") == _CACHE_FORMAT:
+                self._last.set(stored.get("model"), cached=True)
+                return stored["value"]
+            self._last.set(None, cached=True)  # legacy entry: the bare value, model unknown
+            return stored
         value = self._inner.complete_json(system=system, parts=parts, schema=schema, max_tokens=max_tokens)
-        path.write_text(json.dumps(value), encoding="utf-8")
+        model, _ = _last_call(self._inner)
+        path.write_text(json.dumps({"_cache_format": _CACHE_FORMAT, "model": model, "value": value}), encoding="utf-8")
+        self._last.set(model)
         return value
 
-    @property
-    def calls_by_model(self) -> dict[str, int]:
-        """Live (uncached) calls per model that actually answered, as counted by the wrapped client."""
-        return dict(getattr(self._inner, "calls_by_model", {}))
-
     def complete_text(self, *, system: str, messages: Sequence[dict[str, str]], max_tokens: int = 2000) -> str:
-        return self._inner.complete_text(system=system, messages=messages, max_tokens=max_tokens)
+        text = self._inner.complete_text(system=system, messages=messages, max_tokens=max_tokens)
+        self._last.set(_last_call(self._inner)[0])
+        return text
 
     def web_search(self, query: str, *, max_uses: int = 3) -> SearchAnswer:
-        return self._inner.web_search(query, max_uses=max_uses)
+        answer = self._inner.web_search(query, max_uses=max_uses)
+        self._last.set(_last_call(self._inner)[0])
+        return answer
+
+
+class UsageTracker:
+    """Wraps a client for one batch or session and counts which model answered each call.
+
+    Live calls and cached responses are counted separately, by the model that produced them, plus calls that
+    failed. The counts live on this wrapper, so wrapping the shared Streamlit client per batch keeps other
+    sessions' calls out of a batch's numbers.
+    """
+
+    def __init__(self, inner: LLMClient) -> None:
+        self._inner = inner
+        self.provider = inner.provider
+        self.model = inner.model
+        self._lock = threading.Lock()
+        self._live: dict[str, int] = {}
+        self._cached: dict[str, int] = {}
+        self._failed = 0
+
+    def _run(self, call: Any) -> Any:
+        try:
+            result = call()
+        except LLMError:
+            with self._lock:
+                self._failed += 1
+            raise
+        model, cached = _last_call(self._inner)
+        counts = self._cached if cached else self._live
+        name = model or MODEL_NOT_RECORDED
+        with self._lock:
+            counts[name] = counts.get(name, 0) + 1
+        return result
+
+    def complete_json(self, *, system: str, parts: Sequence[Part], schema: dict[str, Any], max_tokens: int = 4000) -> dict[str, Any]:
+        return self._run(lambda: self._inner.complete_json(system=system, parts=parts, schema=schema, max_tokens=max_tokens))
+
+    def complete_text(self, *, system: str, messages: Sequence[dict[str, str]], max_tokens: int = 2000) -> str:
+        return self._run(lambda: self._inner.complete_text(system=system, messages=messages, max_tokens=max_tokens))
+
+    def web_search(self, query: str, *, max_uses: int = 3) -> SearchAnswer:
+        return self._run(lambda: self._inner.web_search(query, max_uses=max_uses))
+
+    def summary(self) -> dict[str, Any]:
+        """``live_calls_by_model``, ``cached_responses_by_model`` and ``failed_calls`` for the outputs."""
+        with self._lock:
+            return {
+                "live_calls_by_model": dict(self._live),
+                "cached_responses_by_model": dict(self._cached),
+                "failed_calls": self._failed,
+            }
 
 
 def get_cached_llm_client(settings: Settings) -> LLMClient:

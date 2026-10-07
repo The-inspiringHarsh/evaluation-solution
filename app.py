@@ -18,7 +18,7 @@ import streamlit as st
 from PIL import ImageDraw, ImageFilter
 
 from src.common.config import DATA_DIR, OUTPUT_DIR, get_settings
-from src.common.llm import LLMError, LLMNotConfigured, get_cached_llm_client
+from src.common.llm import LLMError, LLMNotConfigured, UsageTracker, get_cached_llm_client
 from src.common.privacy import SENSITIVE_FIELDS, mask_field, mask_numbers_in_text
 from src.question2_inventory.agent import InventoryAgent
 from src.question2_inventory.loader import WorkbookError, load_inventory, profile, stock_consistency
@@ -269,16 +269,27 @@ def _load_saved() -> tuple[list[DocumentResult], dict[str, str], dict | None]:
     return [DocumentResult.model_validate(d) for d in data["documents"]], data.get("file_errors") or {}, data.get("run")
 
 
+def _counts(counts: dict | None) -> str:
+    return ", ".join(f"{m} ×{n}" for m, n in (counts or {}).items())
+
+
 def _run_caption(run: dict | None) -> str:
     """One line saying which provider/models produced the results on screen."""
     if not run:
         return ""
-    calls = run.get("live_calls_by_model") or {}
-    answered = ", ".join(f"{m} ×{n}" for m, n in calls.items()) or "none (all responses from the local cache)"
+    parts = [f"provider `{run.get('provider')}`", f"crop reads `{run.get('crop_reads', 'per_field')}`"]
+    if live := _counts(run.get("live_calls_by_model")):
+        parts.append(f"live calls answered by: {live}")
+    if cached := _counts(run.get("cached_responses_by_model")):
+        parts.append(f"reused from the local cache: {cached}")
+    elif run.get("cached_responses_reused"):  # run blocks written before per-model cache attribution
+        parts.append(f"reused from the local cache: {run['cached_responses_reused']}")
+    if run.get("failed_calls"):
+        parts.append(f"failed calls: {run['failed_calls']}")
+    if not (live or cached or run.get("cached_responses_reused")):
+        parts.append("no model responses")
     when = f"{run['generated_at_utc']} · " if run.get("generated_at_utc") else ""
-    return (
-        f"{when}provider `{run.get('provider')}` · crop reads `{run.get('crop_reads', 'per_field')}` · live calls answered by: {answered}"
-    )
+    return when + " · ".join(parts)
 
 
 def document_page() -> None:
@@ -322,11 +333,11 @@ def document_page() -> None:
             errors: dict[str, str] = {}
             sources: dict[str, bytes] = {}
             bar = st.progress(0.0, text="Starting…")
-            calls_before = dict(getattr(client, "calls_by_model", {}) or {})
+            tracked = UsageTracker(client) if client is not None else None  # per batch, not shared across sessions
             for i, (name, data) in enumerate(files):
                 bar.progress(i / len(files), text=f"Processing {name} ({i + 1}/{len(files)})")
                 try:
-                    docs.extend(process_one(name, data, client, SETTINGS.review_threshold, SETTINGS.pdf_dpi, SETTINGS.crop_reads))
+                    docs.extend(process_one(name, data, tracked, SETTINGS.review_threshold, SETTINGS.pdf_dpi, SETTINGS.crop_reads))
                     sources[name] = data
                 except IngestError as exc:
                     errors[name] = str(exc)
@@ -334,14 +345,12 @@ def document_page() -> None:
                     errors[name] = f"vision model error: {exc}"
             add_cross_document_hints(docs)
             bar.progress(1.0, text=f"Processed {len(files)} file(s) into {len(docs)} logical document(s)")
-            calls_after = dict(getattr(client, "calls_by_model", {}) or {})
-            run_info = {
-                "provider": SETTINGS.llm_provider,
-                "model": SETTINGS.llm_model,
-                "crop_reads": SETTINGS.crop_reads,
-                "live_calls_by_model": {m: n - calls_before.get(m, 0) for m, n in calls_after.items() if n > calls_before.get(m, 0)},
-            }
-            st.session_state.update(q3_docs=docs, q3_errors=errors, q3_sources=sources, q3_run=run_info if client else None)
+            run_info = (
+                {"provider": SETTINGS.llm_provider, "model": SETTINGS.llm_model, "crop_reads": SETTINGS.crop_reads, **tracked.summary()}
+                if tracked is not None
+                else None
+            )
+            st.session_state.update(q3_docs=docs, q3_errors=errors, q3_sources=sources, q3_run=run_info)
 
     docs = st.session_state.get("q3_docs")
     if not docs:

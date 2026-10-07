@@ -169,7 +169,7 @@ On Windows the sandbox relies on the wall-clock timeout (POSIX CPU/memory limits
 | `LLM_EFFORT` | `medium` | Claude effort level (`low`…`max`) |
 | `LLM_FALLBACKS` | `default` | Claude server-side refusal fallback; `off` to disable |
 | `LLM_FALLBACK_MODELS` | – | Gemini: comma-separated models tried when the main one is overloaded or out of daily quota |
-| `LLM_MAX_RPM` | `0` | Gemini: requests per minute per model (0 = unpaced; about 8 suits a free-tier key) |
+| `LLM_MAX_RPM` | `0` | Gemini: requests per minute per model (0 = unpaced; use 4.5 on a free-tier key, which allows 5 per minute) |
 | `LLM_MAX_RETRIES` | `5` | Gemini: retries for HTTP 429/5xx/network errors, with backoff and the server's `retryDelay` |
 | `LLM_CACHE` | `on` | cache structured responses in `.cache/llm` (git-ignored) |
 | `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` / `OPENAI_API_KEY` | – | key for the chosen provider |
@@ -306,9 +306,11 @@ screenshot index.
   DuckDuckGo fallback, which needs ordinary internet access.
 - The committed outputs were produced with a free-tier Gemini key: Flash models only, 20 requests per
   model per day and 5 per minute (failed "high demand" requests count too). The run therefore used
-  batched crop reads and spread calls over several Flash models; `all_results.json` → `run` lists how
-  many calls each model answered. A paid key with `CROP_READS=per_field` and a Pro model gives more
-  independent reads per field.
+  batched crop reads and spread calls over several Flash models. `all_results.json` → `run` counts the
+  live calls each model answered in the final run, the responses it reused from the cache by the model that
+  originally produced them, and failed calls. Cache entries written before models were recorded show as
+  "model not recorded"; `outputs/question3/failure_cases.md` lists the runs that produced them. A paid key
+  with `CROP_READS=per_field` and a Pro model gives more independent reads per field.
 
 ## Troubleshooting
 
@@ -321,7 +323,7 @@ screenshot index.
 | Sandbox "CPU-time or memory limit exceeded" | the query was too heavy; narrow it |
 | PDF errors | the PDF is encrypted or corrupt; export it again or convert pages to PNG |
 | Stale results after changing prompts | set `LLM_CACHE=off` or delete `.cache/llm` |
-| Gemini `HTTP 429: quota exceeded: …PerDay…` | the free tier allows 20 requests per model per day: set `LLM_FALLBACK_MODELS`, `CROP_READS=batched` and `LLM_MAX_RPM=4.5`, wait for the daily reset, or enable billing; successful responses are cached, so a re-run only repeats the failed calls |
+| Gemini `HTTP 429: quota exceeded: …PerDay…` | the free tier allows 20 requests per model per day: set `LLM_FALLBACK_MODELS`, `CROP_READS=batched` and `LLM_MAX_RPM=4.5`, wait for the daily reset, or enable billing. Successful responses are cached, so a re-run with the same settings and model reuses every request that has not changed. Requests do change when you switch `CROP_READS` or the model, and when a full-page read that failed before now succeeds (its boxes move the crops), so those are sent again |
 | Gemini `HTTP 503` (high demand) | transient; the client retries with backoff and then tries the fallback models |
 
 ## Screenshots

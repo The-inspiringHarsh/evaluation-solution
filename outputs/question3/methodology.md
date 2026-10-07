@@ -145,7 +145,8 @@ flagged.
 * `json/<document-id>.json`: one file per logical document (`document-id` = first 10 hex chars of
   the file's SHA-1 + page list, so it is stable across runs).
 * `all_results.json`: every document plus the threshold and its rationale, and a `run` block with
-  the provider, model, crop-read mode and the number of live calls each model answered.
+  the provider, model, crop-read mode, the live calls each model answered, the responses reused from the
+  cache by the model that produced them, and the number of failed calls.
 * `flagging_report.csv` / `.json`: one row per flagged field or document, with source file, page,
   predicted type, field, raw candidate, confidence, threshold, reason and a suggested reviewer action.
 * `extraction_summary.csv`: per-document counts of accepted, flagged and missing fields.
