@@ -173,6 +173,7 @@ On Windows the sandbox relies on the wall-clock timeout (POSIX CPU/memory limits
 | `LLM_MAX_RETRIES` | `5` | Gemini: retries for HTTP 429/5xx/network errors, with backoff and the server's `retryDelay` |
 | `LLM_CACHE` | `on` | cache structured responses in `.cache/llm` (git-ignored) |
 | `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` / `OPENAI_API_KEY` | – | key for the chosen provider |
+| `OPENAI_BASE_URL` | `https://api.openai.com/v1` | OpenAI-compatible gateway for `LLM_PROVIDER=openai`, e.g. AI Pipe `https://aipipe.org/openai/v1` (use its token as `OPENAI_API_KEY`) |
 | `SEARCH_PROVIDER` | `auto` | `auto`, `tavily`, `llm`, `duckduckgo` |
 | `TAVILY_API_KEY` | – | optional Tavily key |
 | `REVIEW_THRESHOLD` | `0.85` | field auto-accept threshold |

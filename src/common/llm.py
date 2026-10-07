@@ -514,16 +514,22 @@ class GeminiClient:
 
 
 class OpenAIClient:
-    """OpenAI chat completions via REST (strict JSON schema). No built-in web search here."""
+    """OpenAI chat completions via REST (strict JSON schema). No built-in web search here.
+
+    ``OPENAI_BASE_URL`` points it at an OpenAI-compatible gateway (for example AI Pipe:
+    ``https://aipipe.org/openai/v1``); the key in ``OPENAI_API_KEY`` is sent as a bearer token.
+    """
 
     provider = "openai"
-    _URL = "https://api.openai.com/v1/chat/completions"
+    _DEFAULT_BASE = "https://api.openai.com/v1"
 
     def __init__(self, model: str) -> None:
         import httpx
 
         self._httpx = httpx
         self.model = model
+        base = os.environ.get("OPENAI_BASE_URL", "").strip() or self._DEFAULT_BASE
+        self._URL = base.rstrip("/") + "/chat/completions"
         self._key = os.environ.get("OPENAI_API_KEY", "")
         self._stats_lock = threading.Lock()
         self.calls_by_model: dict[str, int] = {}

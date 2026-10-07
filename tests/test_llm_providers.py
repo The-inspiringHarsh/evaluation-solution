@@ -374,3 +374,15 @@ def test_gemini_last_call_names_the_fallback_that_answered(monkeypatch):
     tracker = UsageTracker(client)
     tracker.complete_json(system="s", parts=[TextPart("x")], schema={"type": "object"})
     assert tracker.summary()["live_calls_by_model"] == {"gemini-3.8-flash": 1}
+
+
+def test_openai_base_url_points_at_a_compatible_gateway(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key-not-real")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://aipipe.org/openai/v1/")
+    client, seen = OpenAIClient("gpt-4.1-mini"), []
+    reply = {"choices": [{"message": {"content": "hi"}}]}
+    client._httpx = NS(post=lambda url, **k: seen.append(url) or NS(status_code=200, json=lambda: reply), HTTPError=httpx.HTTPError)
+    assert client.complete_text(system="s", messages=[]) == "hi"
+    assert seen == ["https://aipipe.org/openai/v1/chat/completions"]
+    monkeypatch.delenv("OPENAI_BASE_URL")
+    assert OpenAIClient("gpt-4.1")._URL == "https://api.openai.com/v1/chat/completions"
